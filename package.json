@@ -1,0 +1,41 @@
+{
+  "name": "express-auth-starter",
+  "version": "1.0.0",
+  "description": "Starter Repo for an Express app with authentication",
+  "main": "index.js",
+  "dependencies": {
+    "axios": "^0.19.1",
+    "express": "^4.17.1",
+    "express-graphql": "^0.9.0",
+    "graphql": "^14.5.8"
+  },
+  "devDependencies": {
+    "ava": "^2.4.0",
+    "babel-eslint": "^10.0.3",
+    "eslint": "^6.8.0",
+    "eslint-config-helloitsjoe": "^1.2.2",
+    "eslint-plugin-import": "^2.20.0",
+    "eslint-plugin-jsx-a11y": "^6.2.3",
+    "eslint-plugin-react": "^7.18.0",
+    "eslint-plugin-react-hooks": "^2.3.0",
+    "nodemon": "^2.0.2"
+  },
+  "scripts": {
+    "test": "ava",
+    "start": "nodemon ./server"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/helloitsjoe/express-auth-starter.git"
+  },
+  "keywords": [
+    "express",
+    "auth"
+  ],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/helloitsjoe/express-auth-starter/issues"
+  },
+  "homepage": "https://github.com/helloitsjoe/express-auth-starter#readme"
+}
