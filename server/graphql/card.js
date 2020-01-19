@@ -33,17 +33,17 @@ const cardSchema = `
     suit: Int!
   }
 
-  type CardNamespace {
+  type CardQuery {
     get: Card!
     exchange(card: CardInput!): Card!
   }
 
   type Query {
-    card: CardNamespace!
+    card: CardQuery!
   }
 
   type Mutation {
-    card: CardNamespace!
+    card: CardQuery!
   }
 `;
 

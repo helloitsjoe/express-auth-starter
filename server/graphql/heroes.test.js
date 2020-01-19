@@ -1,9 +1,9 @@
 import test from 'ava';
-import { heroRoot } from './hero';
+import { heroRoot } from './heroes';
 
 // Examples of resolver unit tests
 test('gets random hero', t => {
-  const { name, powers } = heroRoot.getRandom();
+  const { name, powers } = heroRoot.randomHero();
   const powersAreStrings = powers.every(p => typeof p === 'string');
   t.is(typeof name, 'string');
   t.is(powersAreStrings, true);

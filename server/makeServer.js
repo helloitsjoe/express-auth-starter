@@ -16,10 +16,8 @@ const makeServer = async (port = 3000) => {
   app.use('/', index);
   app.use('/graphql', graphql);
 
-  if (server.address()) {
-    console.log(`app is already listening`);
-    return Promise.resolve(server);
-  }
+  // App is already listening
+  if (server.address()) return Promise.resolve(server);
 
   return new Promise(resolve => {
     server.listen(port, () => {
