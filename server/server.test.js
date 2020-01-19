@@ -31,6 +31,7 @@ test('index route returns index.html', async t => {
   t.is(dataIsHTML, true);
 });
 
+// Examples of graphql API tests
 test('graphql route "get" query returns card', async t => {
   const query = `
     query {
