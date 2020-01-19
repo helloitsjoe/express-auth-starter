@@ -1,6 +1,6 @@
 import test from 'ava';
-import makeServer from './makeServer';
 import axios from 'axios';
+import makeServer from './makeServer';
 
 const PORT = 1234;
 const rootUrl = `http://localhost:${PORT}`;
@@ -32,19 +32,43 @@ test('index route returns index.html', async t => {
 });
 
 test('graphql route "get" query returns card', async t => {
-  const res = await axios
-    .post(graphqlUrl, { query: 'query { get { value suit } }' })
-    .catch(e => console.log(e.message));
-  const { data } = res;
-  t.deepEqual(data.data.get, { value: 1, suit: 0 });
+  const query = `
+    query {
+      card {
+        get {
+          value
+          suit
+        }
+      }
+    }
+  `;
+  const { data } = await axios.post(graphqlUrl, { query }).catch(e => console.log(e.message));
+  const { value, suit } = data.data.card.get;
+  t.is(typeof value, 'number');
+  t.is(typeof suit, 'number');
 });
 
-test.skip('graphql route "exchange" mutation exchanges card', async t => {
-  const res = await axios
+test('graphql route "exchange" mutation exchanges card', async t => {
+  const query = `
+    mutation($card: CardInput!) {
+      card {
+        exchange(card: $card) {
+          value
+          suit
+        }
+      }
+    }
+  `;
+  const card = { value: 1, suit: 0 };
+  const { data } = await axios
     .post(graphqlUrl, {
-      query: 'mutation { exchange(card: { value: 1, suit: 0 }) { value suit } }',
+      query,
+      variables: { card },
     })
-    .catch(e => console.log(e.message));
-  const { data } = res;
-  t.deepEqual(data.data.exchange, { value: 2, suit: 0 });
+    .catch(e => console.error('ERROR', e.response.data.errors[0].message));
+  const { exchange } = data.data.card;
+  const { value, suit } = exchange;
+  t.is(typeof value, 'number');
+  t.is(typeof suit, 'number');
+  t.notDeepEqual(card, exchange);
 });
