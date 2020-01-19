@@ -13,16 +13,22 @@ const server = http.createServer(app);
 const makeServer = async (port = 3000) => {
   app.use(express.static(path.join(__dirname, '../public')));
 
+  // app.use('*', auth);
   app.use('/', index);
   app.use('/graphql', graphql);
 
   // App is already listening
   if (server.address()) return Promise.resolve(server);
 
-  return new Promise(resolve => {
+  return new Promise((resolve, reject) => {
     server.listen(port, () => {
       console.log(`Server listening on localhost:${port}`);
       return resolve(server);
+    });
+
+    server.on('error', e => {
+      console.error(e);
+      reject(e);
     });
   });
 };

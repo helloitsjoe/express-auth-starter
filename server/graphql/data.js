@@ -22,6 +22,8 @@ const heroes = [
     powers: ['whip', 'intelligence'],
     movies: [MOVIE.RAIDERS, MOVIE.TEMPLE, MOVIE.CRUSADE],
   },
+  { name: 'Batman', powers: ['technology'], movies: [MOVIE.BATMAN] },
+  { name: 'Wolverine', powers: ['adamantium', 'healing'], movies: [MOVIE.X_MEN] },
 ];
 
 const villains = [

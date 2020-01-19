@@ -1,5 +1,6 @@
 const { movies } = require('./data');
 
+// Note that we can use types defined in other files
 const movieSchema = `
   type Movie {
     name: String!

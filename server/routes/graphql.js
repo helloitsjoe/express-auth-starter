@@ -7,19 +7,18 @@ const { heroSchema, heroRoot: hero } = require('../graphql/heroes');
 const { movieSchema, movieRoot: movie } = require('../graphql/movies');
 const { villainSchema, villainRoot: villain } = require('../graphql/villains');
 
-const router = express.Router();
-
+// TODO: This schema design could probably be improved
 const combinedSchemas = mergeTypes([cardSchema, heroSchema, villainSchema, movieSchema], {
   all: true,
 });
 
-const schema = buildSchema(combinedSchemas);
-
 const gql = gqlHTTP(() => ({
-  schema,
+  schema: buildSchema(combinedSchemas),
   rootValue: { card, hero, villain, movie },
   graphiql: true,
 }));
+
+const router = express.Router();
 
 router.post('/', gql);
 router.get('/', gql);
