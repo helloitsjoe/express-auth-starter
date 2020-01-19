@@ -22,7 +22,7 @@
     "nodemon": "^2.0.2"
   },
   "scripts": {
-    "test": "ava",
+    "test": "ava --verbose",
     "start": "nodemon ./server"
   },
   "repository": {
