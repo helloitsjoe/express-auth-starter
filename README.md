@@ -1,2 +1,2 @@
-# express-auth-starter
-Starter Repo for an Express app with authentication
+# express-auth-example
+Example of an Express app with authentication
