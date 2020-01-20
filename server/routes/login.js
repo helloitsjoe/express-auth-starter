@@ -5,8 +5,10 @@ const router = express.Router();
 const makeResponse = (message, status = 200) => ({ message, status });
 
 const handleLogin = ({ username, password }) => {
+  const message = `Username: ${username} | Password: ${password}`;
+  console.log(message);
   if (username && password) {
-    return makeResponse(`Username: ${username} | Password: ${password}`);
+    return makeResponse(message);
   }
   return makeResponse('Username and password are both required.', 401);
 };

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <link rel="stylesheet" href="./style.css" />
+    <title>OAuth Dialog</title>
+  </head>
+  <body>
+    <h1>Authorize Test App?</h1>
+    <button id="authorize-button">Authorize</button>
+    <script type="text/javascript">
+      document.getElementById('authorize-button').addEventListener('click', () => {
+        window.location.href = '/code';
+      });
+    </script>
+  </body>
+</html>
