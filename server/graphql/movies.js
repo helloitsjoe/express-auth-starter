@@ -18,12 +18,13 @@ const movieSchema = `
   }
 `;
 
-const getName = ({ name }) => name;
-const getCastMembers = movie => movie.heroes.map(getName).concat(movie.villains.map(getName));
+const getCastMembers = movie => movie.heroes.concat(movie.villains);
 
 const movieRoot = {
   movies: ({ castMemberName }) =>
-    movies.filter(m => (castMemberName ? getCastMembers(m).includes(castMemberName) : true)),
+    movies.filter(m =>
+      castMemberName ? getCastMembers(m).some(({ name }) => name === castMemberName) : true
+    ),
   randomMovie: () => movies[Math.floor(Math.random() * movies.length)],
 };
 
