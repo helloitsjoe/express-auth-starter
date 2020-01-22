@@ -1,8 +1,7 @@
 import openOauth from 'oauth-open';
 import axios from 'axios';
 
-const getUrl = endpoint => `http://localhost:3001${endpoint}`;
-const oauthDialogPage = 'http://localhost:3001/oauth';
+const getUrl = (endpoint, port = 3000) => `http://localhost:${port}${endpoint}`;
 
 const wait = (ms = 500, shouldFail = false) =>
   new Promise((resolve, reject) =>
@@ -17,16 +16,20 @@ export function login({ username, password }) {
 
 export function oauth() {
   return new Promise((resolve, reject) => {
-    openOauth(oauthDialogPage, (err, data) => {
+    openOauth(getUrl('/oauth', 3001), (err, data) => {
       if (err) return reject(err);
-      resolve(data);
+      return resolve(data);
     });
   })
-    .then(({ data }) => axios.get(getUrl('/oauth/token'), { code: data.code }))
+    .then(params => axios.post(getUrl('/oauth/token', 3001), { code: params.code }))
     .then(({ data }) => {
+      console.log(data);
       // eslint-disable-next-line camelcase
       const { access_token } = data;
       return axios.get(getUrl('/secure'), { headers: { authorization: access_token } });
+    })
+    .catch(err => {
+      console.error(err);
     });
 }
 

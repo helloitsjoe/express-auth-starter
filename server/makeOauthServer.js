@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 const http = require('http');
+const cors = require('cors');
 const bodyParser = require('body-parser');
 const oauth = require('./routes/oauth');
 
@@ -11,6 +12,7 @@ const server = http.createServer(app);
 
 const makeOauthServer = async (port = 3001) => {
   app.use(express.static(path.join(__dirname, '../public/oauth')));
+  app.use(cors());
   app.use(bodyParser.json());
 
   app.use('/oauth', oauth);
