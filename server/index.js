@@ -1,5 +1,5 @@
 const makeServer = require('./makeServer');
-const makeOauthServer = require('./makeOauthServer');
+const makeAuthServer = require('./makeAuthServer');
 
 makeServer();
-makeOauthServer();
+makeAuthServer();

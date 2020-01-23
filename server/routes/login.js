@@ -16,7 +16,11 @@ const handleLogin = ({ username, password }) => {
 router.post('/', (req, res) => {
   const { status, message } = handleLogin(req.body);
   console.log(status, message);
-  res.status(status).end(JSON.stringify(message));
+  res.status(status).json({ message });
+});
+
+router.post('/secure', (req, res) => {
+  if (!req.user) return res.status(403).json({ message: 'Unauthorized!' });
 });
 
 module.exports = router;

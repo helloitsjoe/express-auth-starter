@@ -1,7 +1,10 @@
+/* eslint-disable camelcase */
 import openOauth from 'oauth-open';
 import axios from 'axios';
 
 const getUrl = (endpoint, port = 3000) => `http://localhost:${port}${endpoint}`;
+
+let authorization;
 
 const wait = (ms = 500, shouldFail = false) =>
   new Promise((resolve, reject) =>
@@ -11,7 +14,7 @@ const wait = (ms = 500, shouldFail = false) =>
   );
 
 export function login({ username, password }) {
-  return wait().then(() => axios.post(getUrl('/login'), { username, password }));
+  return wait().then(() => axios.post(getUrl('/login', 3001), { username, password }));
 }
 
 export function oauth() {
@@ -24,13 +27,21 @@ export function oauth() {
     .then(params => axios.post(getUrl('/oauth/token', 3001), { code: params.code }))
     .then(({ data }) => {
       console.log(data);
-      // eslint-disable-next-line camelcase
       const { access_token } = data;
-      return axios.get(getUrl('/secure'), { headers: { authorization: access_token } });
-    })
-    .catch(err => {
-      console.error(err);
+      authorization = access_token;
+      return axios.get(getUrl('/oauth/secure', 3001), { headers: { authorization } });
     });
+}
+
+export function updateSecureData(message) {
+  console.log(`authorization:`, authorization);
+  return axios.post(
+    getUrl('/oauth/secure', 3001),
+    { message },
+    {
+      headers: { authorization },
+    }
+  );
 }
 
 export function updateLikes() {
