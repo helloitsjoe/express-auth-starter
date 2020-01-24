@@ -9,8 +9,6 @@ const login = require('./routes/login');
 const app = express();
 const server = http.createServer(app);
 
-// cors
-
 const makeAuthServer = async (port = 3001) => {
   app.use(express.static(path.join(__dirname, '../public/oauth')));
   app.use(cors());

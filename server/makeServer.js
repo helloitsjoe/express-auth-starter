@@ -3,8 +3,6 @@ const path = require('path');
 const http = require('http');
 const bodyParser = require('body-parser');
 const index = require('./routes/index');
-// const login = require('./routes/login');
-// const graphql = require('./routes/graphql');
 
 const app = express();
 const server = http.createServer(app);
@@ -14,7 +12,6 @@ const makeServer = async (port = 3000) => {
   app.use(bodyParser.json());
   // cors
 
-  // app.use('*', auth);
   app.use('/', index);
   // app.use('/graphql', graphql);
   // app.use('/login', login);
