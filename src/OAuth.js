@@ -33,13 +33,19 @@ const OAuth = () => {
 
   return (
     <form onSubmit={handleSendSecure}>
-      <button type="button" onClick={handleOauth}>
-        Authorize with OAuth
-      </button>
-      <input onChange={e => setMessage(e.target.value)} value={message} />
-      <button type="submit">Send message</button>
-      {oauthData && <pre>{oauthData}</pre>}
-      {errorMessage && <pre>{errorMessage}</pre>}
+      <div className="column">
+        <button type="button" onClick={handleOauth}>
+          Authorize with OAuth
+        </button>
+        <input
+          placeholder="Post a message after you log in"
+          onChange={e => setMessage(e.target.value)}
+          value={message}
+        />
+        <button type="submit">Send message</button>
+        {oauthData && <pre>{oauthData}</pre>}
+        {errorMessage && <pre>{errorMessage}</pre>}
+      </div>
     </form>
   );
 };
