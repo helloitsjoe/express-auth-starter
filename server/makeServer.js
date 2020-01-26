@@ -3,6 +3,7 @@ const path = require('path');
 const http = require('http');
 const bodyParser = require('body-parser');
 const index = require('./routes/index');
+const graphql = require('./routes/graphql');
 
 const app = express();
 const server = http.createServer(app);
@@ -13,7 +14,8 @@ const makeServer = async (port = 3000) => {
   // cors
 
   app.use('/', index);
-  // app.use('/graphql', graphql);
+  // TODO: Move this to authServer
+  app.use('/graphql', graphql);
   // app.use('/login', login);
 
   // App is already listening

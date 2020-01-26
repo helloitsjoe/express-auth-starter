@@ -1,6 +1,6 @@
-import test from 'ava';
-import axios from 'axios';
-import makeServer from './makeServer';
+const test = require('ava');
+const axios = require('axios');
+const makeServer = require('./makeServer');
 
 const PORT = 1234;
 const rootUrl = `http://localhost:${PORT}`;

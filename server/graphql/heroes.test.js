@@ -1,7 +1,7 @@
-import test from 'ava';
-import axios from 'axios';
-import { heroRoot } from './heroes';
-import makeServer from '../makeServer';
+const test = require('ava');
+const axios = require('axios');
+const { heroRoot } = require('./heroes');
+const makeServer = require('../makeServer');
 
 // Examples of resolver unit tests
 test('gets random hero', t => {
@@ -45,10 +45,10 @@ test('hero API test', async t => {
       }
     }
   `;
-  const { data } = await axios
+  const res = await axios
     .post(graphqlUrl, { query })
-    .catch(e => console.error('ERROR', e.response.data.errors[0].message));
-  const { heroes } = data.data.hero;
+    .catch(e => console.error('ERROR', e.message || e.response.data.errors[0].message));
+  const { heroes } = res.data.data.hero;
   const allHeroesHaveNames = heroes.every(h => typeof h.name === 'string');
   const allHeroesHavePowers = heroes.every(h => h.powers.length > 0);
   const allHeroesHaveMovies = heroes.every(h => h.movies.length > 0);
