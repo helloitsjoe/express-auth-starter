@@ -1,5 +1,5 @@
 import React from 'react';
-import { login } from './services';
+import { login, sendSecure } from './services';
 
 const Auth = () => {
   const [values, setValues] = React.useState({ username: '', password: '' });
@@ -14,7 +14,20 @@ const Auth = () => {
 
   const handleSubmit = e => {
     e.preventDefault();
-    const { username, password } = values;
+    const { username, password, message } = values;
+    const { name } = e.target;
+
+    // TODO: Two separate forms, only show send if logged in
+    if (name === 'secureMessage') {
+      sendSecure({ message })
+        .then(res => {
+          // TODO
+          console.log(res);
+        })
+        .catch(err => {
+          console.error(err);
+        });
+    }
 
     setLoading(true);
     setError(null);
@@ -44,6 +57,13 @@ const Auth = () => {
         <button type="submit" disabled={loading}>
           Log In
         </button>
+        <input
+          placeholder="Send a message"
+          name="secureMessage"
+          value={values.message}
+          onChange={handleChange}
+        />
+        <button type="submit">Send</button>
         {error && <h1 className="error">Error: {error.message}</h1>}
         {loading && <h1>Loading...</h1>}
         {data && <pre>{JSON.stringify(data, null, 2)}</pre>}

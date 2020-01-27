@@ -44,6 +44,10 @@ export function updateSecureData(message) {
   );
 }
 
+export function sendSecure({ message }) {
+  return axios.pos(getUrl('/secure'), { message } /*, headers */);
+}
+
 export function updateLikes() {
   return fetch().then(res => res.json());
 }
