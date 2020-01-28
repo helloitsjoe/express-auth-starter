@@ -1,33 +1,26 @@
 import React from 'react';
 import { login, sendSecure } from './services';
 
-const Auth = () => {
-  const [values, setValues] = React.useState({ username: '', password: '' });
-  const [loading, setLoading] = React.useState(false);
-  const [error, setError] = React.useState();
-  const [data, setData] = React.useState();
+const useForm = initialValues => {
+  const [values, setValues] = React.useState(initialValues);
 
   const handleChange = e => {
     const { name, value } = e.target;
     setValues(prev => ({ ...prev, [name]: value }));
   };
 
+  return { handleChange, values };
+};
+
+const Login = () => {
+  const { handleChange, values } = useForm({ username: '', password: '' });
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState();
+  const [data, setData] = React.useState();
+
   const handleSubmit = e => {
     e.preventDefault();
     const { username, password, message } = values;
-    const { name } = e.target;
-
-    // TODO: Two separate forms, only show send if logged in
-    if (name === 'secureMessage') {
-      sendSecure({ message })
-        .then(res => {
-          // TODO
-          console.log(res);
-        })
-        .catch(err => {
-          console.error(err);
-        });
-    }
 
     setLoading(true);
     setError(null);
@@ -57,18 +50,47 @@ const Auth = () => {
         <button type="submit" disabled={loading}>
           Log In
         </button>
-        <input
-          placeholder="Send a message"
-          name="secureMessage"
-          value={values.message}
-          onChange={handleChange}
-        />
-        <button type="submit">Send</button>
         {error && <h1 className="error">Error: {error.message}</h1>}
         {loading && <h1>Loading...</h1>}
         {data && <pre>{JSON.stringify(data, null, 2)}</pre>}
       </div>
     </form>
+  );
+};
+
+const SendMessage = () => {
+  const handleSubmit = () => {
+    sendSecure({ message })
+      .then(res => {
+        // TODO
+        console.log(res);
+      })
+      .catch(err => {
+        console.error(err);
+      });
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input
+        placeholder="Send a message"
+        name="secureMessage"
+        value={values.message}
+        onChange={handleChange}
+      />
+      <button type="submit">Send</button>
+    </form>
+  );
+};
+
+const Auth = () => {
+  const loggedIn = false;
+
+  return (
+    <>
+      <Login />
+      {loggedIn && <SendMessage />}
+    </>
   );
 };
 
