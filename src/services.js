@@ -4,8 +4,6 @@ import axios from 'axios';
 
 const getUrl = (endpoint, port = 3000) => `http://localhost:${port}${endpoint}`;
 
-let authorization;
-
 const wait = (ms = 500, shouldFail = false) =>
   new Promise((resolve, reject) =>
     setTimeout(() => {
@@ -25,16 +23,16 @@ export function oauth() {
     });
   })
     .then(params => axios.post(getUrl('/oauth/token', 3001), { code: params.code }))
-    .then(({ data }) => {
-      console.log(data);
-      const { access_token } = data;
-      authorization = access_token;
-      return axios.get(getUrl('/oauth/secure', 3001), { headers: { authorization } });
-    });
+    .then(({ data }) => data.access_token);
+  //   const getPromise = axios.get(getUrl('/oauth/secure', 3001), {
+  //     headers: { authorization: access_token },
+  //   });
+  //   return Promise.all([getPromise, access_token]);
+  // })
+  // .then(([data, access_token]) => ({ data, access_token }));
 }
 
-export function updateSecureData(message) {
-  console.log(`authorization:`, authorization);
+export function updateSecureData(message, authorization) {
   return axios.post(
     getUrl('/oauth/secure', 3001),
     { message },

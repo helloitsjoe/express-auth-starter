@@ -50,12 +50,12 @@ router.post('/token', (req, res) => {
   return res.status(400).json({ message: 'Invalid auth token' });
 });
 
-router.get('/secure', (req, res) => {
-  if (!accessTokens.has(req.get('authorization'))) {
-    return res.status(403).json({ message: 'Unauthorized!' });
-  }
-  return res.json({ message: 'You are in' });
-});
+// router.get('/secure', (req, res) => {
+//   if (!accessTokens.has(req.get('authorization'))) {
+//     return res.status(403).json({ message: 'Unauthorized!' });
+//   }
+//   return res.json({ message: 'You are in' });
+// });
 
 router.post('/secure', (req, res) => {
   const authorization = req.get('authorization');

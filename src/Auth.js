@@ -12,28 +12,48 @@ const useForm = initialValues => {
   return { handleChange, values };
 };
 
+const queryReducer = (s, a) => {
+  switch (a.type) {
+    case 'fetch':
+      return { ...s, status: 'LOADING' };
+    case 'fetch_success':
+      console.log(`success:`, a.payload);
+      return { ...s, status: 'SUCCESS', data: a.payload };
+    case 'fetch_error':
+      console.log(`error:`, a.payload);
+      return { ...s, status: 'ERROR', error: a.payload };
+    default:
+      return s;
+  }
+};
+
+const useFetch = () => {
+  const [state, dispatch] = React.useReducer(queryReducer, {
+    status: 'IDLE',
+    data: null,
+    errorMessage: '',
+  });
+
+  return { ...state, dispatch };
+};
+
 const Login = () => {
   const { handleChange, values } = useForm({ username: '', password: '' });
-  const [loading, setLoading] = React.useState(false);
-  const [error, setError] = React.useState();
-  const [data, setData] = React.useState();
+  const { status, data, errorMessage, dispatch } = useFetch();
+  const isLoading = status === 'LOADING';
 
   const handleSubmit = e => {
     e.preventDefault();
-    const { username, password, message } = values;
+    const { username, password } = values;
 
-    setLoading(true);
-    setError(null);
+    dispatch({ type: 'fetch' });
     login({ username, password })
       .then(res => {
-        console.log(`res:`, res.data);
-        setLoading(false);
-        setData(res.data);
+        // TODO: Set logged in in localHost
+        dispatch({ type: 'fetch_success', payload: res.data });
       })
       .catch(err => {
-        console.error(`err:`, err);
-        setLoading(false);
-        setError(err);
+        dispatch({ type: 'fetch_error', payload: err.message });
       });
   };
 
@@ -47,11 +67,11 @@ const Login = () => {
           value={values.password}
           onChange={handleChange}
         />
-        <button type="submit" disabled={loading}>
+        <button type="submit" disabled={isLoading}>
           Log In
         </button>
-        {error && <h1 className="error">Error: {error.message}</h1>}
-        {loading && <h1>Loading...</h1>}
+        {errorMessage && <h1 className="error">Error: {errorMessage}</h1>}
+        {isLoading && <h1>Loading...</h1>}
         {data && <pre>{JSON.stringify(data, null, 2)}</pre>}
       </div>
     </form>
@@ -59,14 +79,21 @@ const Login = () => {
 };
 
 const SendMessage = () => {
-  const handleSubmit = () => {
+  const { handleChange, values } = useForm({ message: '' });
+  const { status, data, errorMessage, dispatch } = useFetch();
+  const isLoading = status === 'LOADING';
+
+  const handleSubmit = e => {
+    e.preventDefault();
+    const { message } = values;
+
+    dispatch({ type: 'fetch' });
     sendSecure({ message })
       .then(res => {
-        // TODO
-        console.log(res);
+        dispatch({ type: 'fetch_success', payload: res.data });
       })
       .catch(err => {
-        console.error(err);
+        dispatch({ type: 'fetch_error', payload: err.message });
       });
   };
 
@@ -78,13 +105,27 @@ const SendMessage = () => {
         value={values.message}
         onChange={handleChange}
       />
-      <button type="submit">Send</button>
+      <button type="submit" disabled={isLoading}>
+        Send
+      </button>
+      {errorMessage && <h1 className="error">Error: {errorMessage}</h1>}
+      {isLoading && <h1>Loading...</h1>}
+      {data && <pre>{JSON.stringify(data, null, 2)}</pre>}
     </form>
   );
 };
 
 const Auth = () => {
-  const loggedIn = false;
+  const [loggedIn, setLoggedIn] = React.useState(false);
+
+  React.useEffect(
+    () => {
+      setLoggedIn(localStorage.getItem('auth'));
+    },
+    [
+      /* ??? */
+    ]
+  );
 
   return (
     <>

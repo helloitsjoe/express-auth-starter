@@ -2,18 +2,19 @@ import React from 'react';
 import { oauth, updateSecureData } from './services';
 
 const OAuth = () => {
-  const [oauthData, setOauthData] = React.useState();
+  const [secureData, setSecureData] = React.useState();
   const [errorMessage, setErrorMessage] = React.useState('');
   const [message, setMessage] = React.useState('');
+  const [authToken, setAuthToken] = React.useState();
 
-  const handleOauth = e => {
+  const handleOauth = () => {
     setErrorMessage('');
     return oauth()
-      .then(res => {
-        setOauthData(res.data.message);
+      .then(token => {
+        setAuthToken(token);
       })
       .catch(err => {
-        setOauthData(null);
+        setAuthToken(null);
         setErrorMessage(err.message);
       });
   };
@@ -21,12 +22,12 @@ const OAuth = () => {
   const handleSendSecure = e => {
     e.preventDefault();
     setErrorMessage('');
-    return updateSecureData(message)
+    return updateSecureData(message, authToken)
       .then(res => {
-        setOauthData(res.data.message);
+        setSecureData(res.data.message);
       })
       .catch(err => {
-        setOauthData(null);
+        setSecureData(null);
         setErrorMessage(err.message);
       });
   };
@@ -43,7 +44,7 @@ const OAuth = () => {
           value={message}
         />
         <button type="submit">Send message</button>
-        {oauthData && <pre>{oauthData}</pre>}
+        {secureData && <pre>{secureData}</pre>}
         {errorMessage && <pre>{errorMessage}</pre>}
       </div>
     </form>
