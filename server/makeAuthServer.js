@@ -4,7 +4,7 @@ const http = require('http');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const oauth = require('./routes/oauth');
-const login = require('./routes/login');
+const jwt = require('./routes/jwt');
 
 const app = express();
 const server = http.createServer(app);
@@ -15,7 +15,7 @@ const makeAuthServer = async (port = 3001) => {
   app.use(bodyParser.json());
 
   app.use('/oauth', oauth);
-  app.use('/login', login);
+  app.use('/jwt', jwt);
 
   // App is already listening
   if (server.address()) return Promise.resolve(server);

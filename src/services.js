@@ -12,7 +12,13 @@ const wait = (ms = 500, shouldFail = false) =>
   );
 
 export function login({ username, password }) {
-  return wait().then(() => axios.post(getUrl('/login', 3001), { username, password }));
+  return wait().then(() => axios.post(getUrl('/jwt/login', 3001), { username, password }));
+}
+
+export function sendSecure(message, authorization) {
+  return wait().then(() =>
+    axios.post(getUrl('/jwt/secure', 3001), { message }, { headers: { authorization } })
+  );
 }
 
 export function oauth() {
@@ -40,10 +46,6 @@ export function updateSecureData(message, authorization) {
       headers: { authorization },
     }
   );
-}
-
-export function sendSecure({ message }) {
-  return axios.pos(getUrl('/secure'), { message } /*, headers */);
 }
 
 export function updateLikes() {

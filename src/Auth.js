@@ -1,5 +1,6 @@
 import React from 'react';
 import { login, sendSecure } from './services';
+import { withAuthProvider, useAuth } from './AuthContext';
 
 const useForm = initialValues => {
   const [values, setValues] = React.useState(initialValues);
@@ -21,7 +22,7 @@ const queryReducer = (s, a) => {
       return { ...s, status: 'SUCCESS', data: a.payload };
     case 'fetch_error':
       console.log(`error:`, a.payload);
-      return { ...s, status: 'ERROR', error: a.payload };
+      return { ...s, status: 'ERROR', errorMessage: a.payload };
     default:
       return s;
   }
@@ -40,6 +41,8 @@ const useFetch = () => {
 const Login = () => {
   const { handleChange, values } = useForm({ username: '', password: '' });
   const { status, data, errorMessage, dispatch } = useFetch();
+  const { logIn } = useAuth();
+
   const isLoading = status === 'LOADING';
 
   const handleSubmit = e => {
@@ -50,6 +53,8 @@ const Login = () => {
     login({ username, password })
       .then(res => {
         // TODO: Set logged in in localHost
+        console.log(res.data);
+        logIn(res.data.token);
         dispatch({ type: 'fetch_success', payload: res.data });
       })
       .catch(err => {
@@ -79,8 +84,11 @@ const Login = () => {
 };
 
 const SendMessage = () => {
-  const { handleChange, values } = useForm({ message: '' });
+  // TODO: Why is handleChange causing AuthContext to update?
+  const { handleChange, values } = useForm({ secureMessage: '' });
   const { status, data, errorMessage, dispatch } = useFetch();
+  const { token } = useAuth();
+
   const isLoading = status === 'LOADING';
 
   const handleSubmit = e => {
@@ -88,7 +96,7 @@ const SendMessage = () => {
     const { message } = values;
 
     dispatch({ type: 'fetch' });
-    sendSecure({ message })
+    sendSecure(message, token)
       .then(res => {
         dispatch({ type: 'fetch_success', payload: res.data });
       })
@@ -102,7 +110,7 @@ const SendMessage = () => {
       <input
         placeholder="Send a message"
         name="secureMessage"
-        value={values.message}
+        value={values.secureMessage}
         onChange={handleChange}
       />
       <button type="submit" disabled={isLoading}>
@@ -116,23 +124,14 @@ const SendMessage = () => {
 };
 
 const Auth = () => {
-  const [loggedIn, setLoggedIn] = React.useState(false);
-
-  React.useEffect(
-    () => {
-      setLoggedIn(localStorage.getItem('auth'));
-    },
-    [
-      /* ??? */
-    ]
-  );
-
+  const auth = useAuth();
+  console.log(`auth:`, auth);
   return (
     <>
       <Login />
-      {loggedIn && <SendMessage />}
+      {auth.isLoggedIn && <SendMessage />}
     </>
   );
 };
 
-export default Auth;
+export default withAuthProvider(Auth);
