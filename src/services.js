@@ -22,30 +22,24 @@ export function sendSecure(message, authorization) {
 }
 
 export function oauth() {
-  return new Promise((resolve, reject) => {
-    openOauth(getUrl('/oauth', 3001), (err, data) => {
-      if (err) return reject(err);
-      return resolve(data);
-    });
-  })
+  return wait()
+    .then(() => {
+      return new Promise((resolve, reject) => {
+        openOauth(getUrl('/oauth', 3001), (err, data) => {
+          if (err) return reject(err);
+          return resolve(data);
+        });
+      });
+    })
     .then(params => axios.post(getUrl('/oauth/token', 3001), { code: params.code }))
     .then(({ data }) => data.access_token);
-  //   const getPromise = axios.get(getUrl('/oauth/secure', 3001), {
-  //     headers: { authorization: access_token },
-  //   });
-  //   return Promise.all([getPromise, access_token]);
-  // })
-  // .then(([data, access_token]) => ({ data, access_token }));
 }
 
 export function updateSecureData(message, authorization) {
-  return axios.post(
-    getUrl('/oauth/secure', 3001),
-    { message },
-    {
-      headers: { authorization },
-    }
-  );
+  return wait().then(() => {
+    const options = { headers: { authorization } };
+    return axios.post(getUrl('/oauth/secure', 3001), { message }, options);
+  });
 }
 
 export function updateLikes() {

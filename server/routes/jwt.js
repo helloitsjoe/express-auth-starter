@@ -5,14 +5,14 @@ const { generateRandom, ONE_DAY_IN_SECONDS } = require('./utils');
 
 const router = express.Router();
 
+const tokens = new Set();
+
 const makeResponse = ({ message, token, expires_in, status = 200 }) => ({
   message,
   status,
   token,
   expires_in,
 });
-
-const tokens = new Set();
 
 const handleLogin = ({ username, password }) => {
   const message = `Username: ${username} | Password: ${password}`;
@@ -33,7 +33,12 @@ router.post('/login', (req, res) => {
 });
 
 router.post('/secure', (req, res) => {
-  if (!req.user) return res.status(403).json({ message: 'Unauthorized!' });
+  const { authorization } = req.headers;
+  if (!tokens.has(authorization)) {
+    return res.status(403).json({ message: 'Unauthorized!' });
+  }
+  // TODO: JWT middleware
+  // if (!req.user) return res.status(403).json({ message: 'Unauthorized!' });
   return res.json({ message: 'hi' });
 });
 

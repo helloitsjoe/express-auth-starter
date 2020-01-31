@@ -125,7 +125,7 @@ const SendMessage = () => {
 
 const Auth = () => {
   const auth = useAuth();
-  console.log(`auth:`, auth);
+  // TODO: Either Login or SendMessage
   return (
     <>
       <Login />

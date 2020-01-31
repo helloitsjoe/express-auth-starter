@@ -16,7 +16,6 @@ const makeServer = async (port = 3000) => {
   app.use('/', index);
   // TODO: Move this to authServer
   app.use('/graphql', graphql);
-  // app.use('/login', login);
 
   // App is already listening
   if (server.address()) return Promise.resolve(server);
