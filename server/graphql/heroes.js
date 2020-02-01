@@ -7,43 +7,54 @@ const heroSchema = `
     movies: [String!]!
   }
 
-  type HeroQuery {
-    fake: String!
+  type Query {
+    hero(name: String, power: String): Hero!
     heroes: [Hero!]!
-    hero(name: String): Hero!
     randomHero: Hero!
     getByPower: [Hero!]!
   }
-  type Query {
-    hero: HeroQuery!
-  }
 `;
 
-const hero = args => {
-  console.log(args);
+const getRandomHero = () => heroes[Math.floor(Math.random() * heroes.length)];
+
+const getHeroFromArgs = ({ name, power }) => {
+  const defaultHero = { name: 'Unknown', powers: ['Unknown'], movies: ['Unknown'] };
+  if (name) {
+    return heroes.find(h => h.name.match(new RegExp(name, 'i'))) || defaultHero;
+  }
+  if (power) {
+    return heroes.find(h => h.powers.includes(power)) || defaultHero;
+  }
+  return getRandomHero();
+};
+
+const hero = ({ name, power } = {}) => {
+  const hero = getHeroFromArgs({ name, power });
   return {
     name({ shouldUppercase = false }) {
-      return shouldUppercase ? this.name.toUpperCase() : this.name;
-    }
+      return shouldUppercase ? hero.name.toUpperCase() : hero.name;
+    },
+    powers: hero.powers,
+    movies: hero.movies,
   };
 };
 
-const heroRoot = {
+const heroRootObject = {
   hero,
-  fake: 'HI',
-  heroes(root, args, context, info) {
-    console.log('FAKE', this.fake);
-    console.log(`root:`, root);
-    console.log(`args:`, typeof args);
-    console.log(`context:`, context);
-    console.log(`info:`, info);
-    return heroes;
-  },
-  randomHero: () => heroes[Math.floor(Math.random() * heroes.length)],
-  getByPower: ({ power }) => heroes.filter(hero => hero.powers.includes(power))
+  heroes,
+  randomHero: () => hero(),
 };
 
+class Hero {
+  hero() {}
+
+  heroes() {}
+
+  randomHero() {}
+}
+
 module.exports = {
-  heroRoot,
-  heroSchema
+  heroRootObject,
+  heroRootClass: new Hero(),
+  heroSchema,
 };
