@@ -6,7 +6,6 @@ const { heroSchema, heroRootObject: hero } = require('../graphql/heroes');
 const { movieSchema, movieRoot: movie } = require('../graphql/movies');
 const { villainSchema, villainRoot: villain } = require('../graphql/villains');
 
-// TODO: This schema design could probably be improved
 const combinedSchemas = mergeTypes([heroSchema, villainSchema, movieSchema], {
   all: true,
 });

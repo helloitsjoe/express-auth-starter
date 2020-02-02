@@ -17,10 +17,12 @@ const getRandom = arr => arr[Math.floor(Math.random() * arr.length)];
 
 const heroesResolver = ({ name, power } = {}) => {
   const heroesByName = name ? heroes.filter(h => h.name.match(new RegExp(name, 'i'))) : heroes;
-  const heroesByPower = power ? heroesByName.filter(h => h.powers.includes(power)) : heroes;
-  const finalHeroes = [...new Set([...heroesByName, ...heroesByPower])];
+  const heroesByPower = power ? heroesByName.filter(h => h.powers.includes(power)) : heroesByName;
 
-  return finalHeroes.map(h => ({
+  // TODO: I think this would work if I did name && heroes.filter... etc
+  // const finalHeroes = heroesByName || heroesByPower || getRandomHero;
+
+  return heroesByPower.map(h => ({
     // Note: This works, but you can't unit test this resolver anymore
     // because hero.name returns a function instead of a value
     name({ shouldUppercase = false }) {
