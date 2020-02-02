@@ -30,6 +30,7 @@ const villains = [
   { name: 'Bane', powers: ['strength', 'invulnerability'], movies: [MOVIE.BATMAN] },
   { name: 'The Joker', powers: ['psychology', 'chaos'], movies: [MOVIE.BATMAN] },
   { name: 'Magneto', powers: ['magnetism'], movies: [MOVIE.X_MEN] },
+  { name: 'Syndrome', powers: ['technology'], movies: [MOVIE.INCREDIBLES] },
 ];
 
 const createMovie = name => {

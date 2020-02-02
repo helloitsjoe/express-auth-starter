@@ -6,12 +6,14 @@ const { heroSchema, heroRootObject: hero } = require('../graphql/heroes');
 const { movieSchema, movieRoot: movie } = require('../graphql/movies');
 const { villainSchema, villainRoot: villain } = require('../graphql/villains');
 
-const combinedSchemas = mergeTypes([heroSchema, villainSchema, movieSchema], {
-  all: true,
-});
+const combinedSchemas = buildSchema(
+  mergeTypes([heroSchema, villainSchema, movieSchema], {
+    all: true,
+  })
+);
 
 const gql = gqlHTTP(() => ({
-  schema: buildSchema(combinedSchemas),
+  schema: combinedSchemas,
   rootValue: { ...hero, ...villain, ...movie },
   graphiql: true,
 }));

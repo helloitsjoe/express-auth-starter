@@ -16,13 +16,12 @@ const heroSchema = `
 const getRandom = arr => arr[Math.floor(Math.random() * arr.length)];
 
 const heroesResolver = ({ name, power } = {}) => {
-  const heroesByName = name ? heroes.filter(h => h.name.match(new RegExp(name, 'i'))) : heroes;
-  const heroesByPower = power ? heroesByName.filter(h => h.powers.includes(power)) : heroesByName;
+  const heroesByName = name && heroes.filter(h => h.name.match(new RegExp(name, 'i')));
+  const heroesByPower = power && heroes.filter(h => h.powers.includes(power));
 
-  // TODO: I think this would work if I did name && heroes.filter... etc
-  // const finalHeroes = heroesByName || heroesByPower || getRandomHero;
+  const finalHeroes = heroesByName || heroesByPower || heroes;
 
-  return heroesByPower.map(h => ({
+  return finalHeroes.map(h => ({
     // Note: This works, but you can't unit test this resolver anymore
     // because hero.name returns a function instead of a value
     name({ shouldUppercase = false }) {
@@ -35,33 +34,10 @@ const heroesResolver = ({ name, power } = {}) => {
 
 const heroRootObject = {
   heroes: heroesResolver,
-  randomHero: getRandom(heroesResolver()),
+  randomHero: () => getRandom(heroesResolver()),
 };
-
-class Hero {
-  // heroes() {
-  //   return new Heroes({name, power});
-  // }
-  // randomHero() {}
-}
-
-// class Heroes {
-//   constructor({name, power}) {
-//     this._name = name;
-//     this.power = power;
-//   }
-
-//   name() {
-
-//   }
-
-//   power() {
-//     return
-//   }
-// }
 
 module.exports = {
   heroRootObject,
-  heroRootClass: new Hero(),
   heroSchema,
 };
