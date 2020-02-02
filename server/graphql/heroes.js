@@ -8,50 +8,55 @@ const heroSchema = `
   }
 
   type Query {
-    hero(name: String, power: String): Hero!
-    heroes: [Hero!]!
+    heroes(name: String, power: String): [Hero!]!
     randomHero: Hero!
-    getByPower: [Hero!]!
   }
 `;
 
-const getRandomHero = () => heroes[Math.floor(Math.random() * heroes.length)];
+const getRandom = arr => arr[Math.floor(Math.random() * arr.length)];
 
-const getHeroFromArgs = ({ name, power }) => {
-  const defaultHero = { name: 'Unknown', powers: ['Unknown'], movies: ['Unknown'] };
-  if (name) {
-    return heroes.find(h => h.name.match(new RegExp(name, 'i'))) || defaultHero;
-  }
-  if (power) {
-    return heroes.find(h => h.powers.includes(power)) || defaultHero;
-  }
-  return getRandomHero();
-};
+const heroesResolver = ({ name, power } = {}) => {
+  const heroesByName = name ? heroes.filter(h => h.name.match(new RegExp(name, 'i'))) : heroes;
+  const heroesByPower = power ? heroesByName.filter(h => h.powers.includes(power)) : heroes;
+  const finalHeroes = [...new Set([...heroesByName, ...heroesByPower])];
 
-const hero = ({ name, power } = {}) => {
-  const hero = getHeroFromArgs({ name, power });
-  return {
+  return finalHeroes.map(h => ({
+    // Note: This works, but you can't unit test this resolver anymore
+    // because hero.name returns a function instead of a value
     name({ shouldUppercase = false }) {
-      return shouldUppercase ? hero.name.toUpperCase() : hero.name;
+      return shouldUppercase ? h.name.toUpperCase() : h.name;
     },
-    powers: hero.powers,
-    movies: hero.movies,
-  };
+    powers: h.powers,
+    movies: h.movies,
+  }));
 };
 
 const heroRootObject = {
-  hero,
-  heroes,
-  randomHero: () => hero(),
+  heroes: heroesResolver,
+  randomHero: getRandom(heroesResolver()),
 };
 
 class Hero {
-  hero() {}
-
-  heroes() {}
-
-  randomHero() {}
+  // heroes() {
+  //   return new Heroes({name, power});
+  // }
+  // randomHero() {}
 }
+
+// class Heroes {
+//   constructor({name, power}) {
+//     this._name = name;
+//     this.power = power;
+//   }
+
+//   name() {
+
+//   }
+
+//   power() {
+//     return
+//   }
+// }
 
 module.exports = {
   heroRootObject,
