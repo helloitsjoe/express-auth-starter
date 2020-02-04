@@ -1,20 +1,20 @@
 const express = require('express');
 const gqlHTTP = require('express-graphql');
 const { buildSchema } = require('graphql');
-const { mergeTypes } = require('merge-graphql-schemas');
-const { heroSchema, heroRootObject: hero } = require('../graphql/heroes');
-const { movieSchema, movieRoot: movie } = require('../graphql/movies');
-const { villainSchema, villainRoot: villain } = require('../graphql/villains');
 
-const combinedSchemas = buildSchema(
-  mergeTypes([heroSchema, villainSchema, movieSchema], {
-    all: true,
-  })
-);
+const basicSchema = buildSchema(`
+  type Query {
+    foo: String!
+  }
+`);
+
+const rootValue = {
+  foo: 'bar',
+};
 
 const gql = gqlHTTP(() => ({
-  schema: combinedSchemas,
-  rootValue: { ...hero, ...villain, ...movie },
+  schema: basicSchema,
+  rootValue,
   graphiql: true,
 }));
 
