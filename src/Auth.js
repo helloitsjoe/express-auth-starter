@@ -75,7 +75,7 @@ const Login = () => {
         <button type="submit" disabled={isLoading}>
           Log In
         </button>
-        {errorMessage && <h1 className="error">Error: {errorMessage}</h1>}
+        {status === 'ERROR' && <h1 className="error">Error: {errorMessage}</h1>}
         {isLoading && <h1>Loading...</h1>}
         {data && <pre>{JSON.stringify(data, null, 2)}</pre>}
       </div>

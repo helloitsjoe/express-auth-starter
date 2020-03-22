@@ -1,31 +1,33 @@
-const test = require('ava');
+/**
+ * @jest-environment node
+ */
 const axios = require('axios');
-const makeServer = require('./makeServer');
+const makeServer = require('../makeServer');
 
 const PORT = 1234;
 const rootUrl = `http://localhost:${PORT}`;
 
 let server;
-test.before(async () => {
+beforeAll(async () => {
   server = await makeServer(PORT);
 });
 
-test.after(done => {
+afterAll(done => {
   server.close(done);
 });
 
-test('listens on given port', t => {
+test('listens on given port', () => {
   const actualPort = server.address().port;
-  t.is(actualPort, PORT);
+  expect(actualPort).toBe(PORT);
 });
 
-test('returns server if already listening', async t => {
+test('returns server if already listening', async () => {
   const listeningServer = await makeServer(PORT);
-  t.is(listeningServer, server);
+  expect(listeningServer).toBe(server);
 });
 
-test('index route returns index.html', async t => {
-  const res = await axios.get(rootUrl);
+test('index route returns index.html', async () => {
+  const res = await axios.get(rootUrl).catch(err => console.error(err));
   const dataIsHTML = /<!DOCTYPE html>/.test(res.data);
-  t.is(dataIsHTML, true);
+  expect(dataIsHTML).toBe(true);
 });

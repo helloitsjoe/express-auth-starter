@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 const http = require('http');
+const cors = require('cors');
 const bodyParser = require('body-parser');
 const index = require('./routes/index');
 const graphql = require('./routes/graphql');
@@ -10,10 +11,11 @@ const server = http.createServer(app);
 
 const makeServer = async (port = 3000) => {
   app.use(express.static(path.join(__dirname, '../public')));
+  app.use(cors());
   app.use(bodyParser.json());
   // cors
 
-  app.use('/', index);
+  // app.use('/', index);
   // TODO: Move this to authServer
   app.use('/graphql', graphql);
 
