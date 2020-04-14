@@ -6,8 +6,13 @@ import OAuth from './OAuth';
 export default function App() {
   return (
     <>
-      <Auth />
+      <h3>JWT</h3>
+      <Auth endpoint="/jwt" />
       <hr />
+      <h3>Basic Auth</h3>
+      <Auth endpoint="/basic" />
+      <hr />
+      <h3>OAuth</h3>
       <OAuth />
       {/* <hr />
       <Passport /> */}

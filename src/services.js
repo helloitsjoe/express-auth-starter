@@ -11,13 +11,17 @@ const wait = (ms = 500, shouldFail = false) =>
     }, ms)
   );
 
-export function login({ username, password }) {
-  return wait().then(() => axios.post(getUrl('/jwt/login', 3001), { username, password }));
+export function login({ endpoint, username, password }) {
+  return wait().then(() => axios.post(getUrl(`${endpoint}/login`, 3001), { username, password }));
 }
 
-export function sendSecure(message, authorization) {
+export function sendSecure({ endpoint, message, token }) {
   return wait().then(() =>
-    axios.post(getUrl('/jwt/secure', 3001), { message }, { headers: { authorization } })
+    axios.post(
+      getUrl(`${endpoint}/secure`, 3001),
+      { message },
+      { headers: { authorization: `Bearer ${token}` } }
+    )
   );
 }
 

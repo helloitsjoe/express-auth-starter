@@ -4,6 +4,7 @@ const http = require('http');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const oauth = require('./routes/oauth');
+const basic = require('./routes/basic');
 const jwt = require('./routes/jwt');
 
 const app = express();
@@ -15,6 +16,8 @@ const makeAuthServer = async (port = 3001) => {
   app.use(bodyParser.json());
 
   app.use('/oauth', oauth);
+  // TODO: Consolidate basic and jwt
+  app.use('/basic', basic);
   app.use('/jwt', jwt);
 
   // App is already listening

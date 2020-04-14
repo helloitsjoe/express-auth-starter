@@ -1,29 +1,21 @@
-/* eslint-disable camelcase */
 const express = require('express');
-
-const { generateRandom, ONE_DAY_IN_SECONDS } = require('./utils');
+// const expressJWT = require('express-jwt');
+const jwt = require('jsonwebtoken');
+const { ONE_HOUR_IN_SECONDS, makeResponse } = require('./utils');
 
 const router = express.Router();
 
-const tokens = new Set();
-
-const makeResponse = ({ message, token, expires_in, status = 200 }) => ({
-  message,
-  status,
-  token,
-  expires_in,
-});
+// TODO: Signup
 
 const handleLogin = ({ username, password }) => {
   const message = `Username: ${username} | Password: ${password}`;
+  // TODO: Check password
   console.log(message);
   if (!username || !password) {
     return makeResponse({ message: 'Username and password are both required.', status: 401 });
   }
-  const token = generateRandom(50);
-  const expires_in = ONE_DAY_IN_SECONDS;
-  tokens.add(token);
-  return makeResponse({ token, expires_in });
+  const token = jwt.sign({ username, exp: ONE_HOUR_IN_SECONDS }, 'mysecret');
+  return makeResponse({ token });
 };
 
 router.post('/login', (req, res) => {
@@ -33,13 +25,16 @@ router.post('/login', (req, res) => {
 });
 
 router.post('/secure', (req, res) => {
-  const { authorization } = req.headers;
-  if (!tokens.has(authorization)) {
-    return res.status(403).json({ message: 'Unauthorized!' });
+  try {
+    const token = req.headers.authorization.split('Bearer ')[1];
+    const decoded = jwt.verify(token, 'mysecret');
+    console.log(`decoded:`, decoded);
+    const { username } = decoded;
+    return res.json({ message: `Hi ${username}` });
+  } catch (err) {
+    console.error('Error verifying token:', err);
+    return res.status(403).json({ message: `Unauthorized! ${err.message}` });
   }
-  // TODO: JWT middleware
-  // if (!req.user) return res.status(403).json({ message: 'Unauthorized!' });
-  return res.json({ message: 'hi' });
 });
 
 module.exports = router;

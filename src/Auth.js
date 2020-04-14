@@ -38,7 +38,7 @@ const useFetch = () => {
   return { ...state, dispatch };
 };
 
-const Login = () => {
+const Login = ({ endpoint }) => {
   const { handleChange, values } = useForm({ username: '', password: '' });
   const { status, data, errorMessage, dispatch } = useFetch();
   const { logIn } = useAuth();
@@ -50,7 +50,7 @@ const Login = () => {
     const { username, password } = values;
 
     dispatch({ type: 'fetch' });
-    login({ username, password })
+    login({ endpoint, username, password })
       .then(res => {
         // TODO: Set logged in in localHost
         console.log(res.data);
@@ -58,7 +58,8 @@ const Login = () => {
         dispatch({ type: 'fetch_success', payload: res.data });
       })
       .catch(err => {
-        dispatch({ type: 'fetch_error', payload: err.message });
+        const { message } = (err.response && err.response.data) || err;
+        dispatch({ type: 'fetch_error', payload: message || err.response.status });
       });
   };
 
@@ -83,7 +84,7 @@ const Login = () => {
   );
 };
 
-const SendMessage = () => {
+const SendMessage = ({ endpoint }) => {
   // TODO: Why is handleChange causing AuthContext to update?
   const { handleChange, values } = useForm({ secureMessage: '' });
   const { status, data, errorMessage, dispatch } = useFetch();
@@ -96,12 +97,13 @@ const SendMessage = () => {
     const { message } = values;
 
     dispatch({ type: 'fetch' });
-    sendSecure(message, token)
+    sendSecure({ endpoint, message, token })
       .then(res => {
         dispatch({ type: 'fetch_success', payload: res.data });
       })
       .catch(err => {
-        dispatch({ type: 'fetch_error', payload: err.message });
+        const { message } = (err.response && err.response.data) || err;
+        dispatch({ type: 'fetch_error', payload: message || err.response.status });
       });
   };
 
@@ -123,13 +125,13 @@ const SendMessage = () => {
   );
 };
 
-const Auth = () => {
+const Auth = ({ endpoint }) => {
   const auth = useAuth();
   // TODO: Either Login or SendMessage
   return (
     <>
-      <Login />
-      {auth.isLoggedIn && <SendMessage />}
+      <Login endpoint={endpoint} />
+      {auth.isLoggedIn && <SendMessage endpoint={endpoint} />}
     </>
   );
 };
