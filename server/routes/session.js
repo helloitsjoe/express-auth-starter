@@ -4,7 +4,7 @@ const { generateRandom, makeResponse, ONE_HOUR_IN_SECONDS } = require('./utils')
 
 const router = express.Router();
 
-const tokens = new Set();
+const tokens = new Map();
 
 const handleLogin = ({ username, password }) => {
   const message = `Username: ${username} | Password: ${password}`;
@@ -16,8 +16,8 @@ const handleLogin = ({ username, password }) => {
   const token = generateRandom(50);
   // TODO: Make expired error
   const expires_in = ONE_HOUR_IN_SECONDS;
-  tokens.add(token);
-  return makeResponse({ token, expires_in });
+  tokens.set(token, { username, expires_in });
+  return makeResponse({ token });
 };
 
 router.post('/login', (req, res) => {
@@ -33,7 +33,8 @@ router.post('/secure', (req, res) => {
   if (!tokens.has(token)) {
     return res.status(403).json({ message: 'Unauthorized!' });
   }
-  return res.json({ message: 'hi' });
+  const { username } = tokens.get(token);
+  return res.json({ message: `Hi from session auth, ${username}!` });
 });
 
 module.exports = router;

@@ -9,8 +9,8 @@ export default function App() {
       <h3>JWT</h3>
       <Auth endpoint="/jwt" />
       <hr />
-      <h3>Basic Auth</h3>
-      <Auth endpoint="/basic" />
+      <h3>Session Auth</h3>
+      <Auth endpoint="/session" />
       <hr />
       <h3>OAuth</h3>
       <OAuth />

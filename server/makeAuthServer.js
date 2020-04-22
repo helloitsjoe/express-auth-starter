@@ -4,7 +4,7 @@ const http = require('http');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const oauth = require('./routes/oauth');
-const basic = require('./routes/basic');
+const session = require('./routes/session');
 const jwt = require('./routes/jwt');
 
 const app = express();
@@ -15,10 +15,10 @@ const makeAuthServer = async (port = 3001) => {
   app.use(cors());
   app.use(bodyParser.json());
 
-  app.use('/oauth', oauth);
-  // TODO: Consolidate basic and jwt
-  app.use('/basic', basic);
+  // TODO: Consolidate session and jwt
   app.use('/jwt', jwt);
+  app.use('/session', session);
+  app.use('/oauth', oauth);
 
   // App is already listening
   if (server.address()) return Promise.resolve(server);

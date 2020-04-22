@@ -28,9 +28,7 @@ router.post('/secure', (req, res) => {
   try {
     const token = req.headers.authorization.split('Bearer ')[1];
     const decoded = jwt.verify(token, 'mysecret');
-    console.log(`decoded:`, decoded);
-    const { username } = decoded;
-    return res.json({ message: `Hi ${username}` });
+    return res.json({ message: `Hi from JWT, ${decoded.username}!` });
   } catch (err) {
     console.error('Error verifying token:', err);
     return res.status(403).json({ message: `Unauthorized! ${err.message}` });
