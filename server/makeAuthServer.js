@@ -25,7 +25,7 @@ const makeAuthServer = async (port = 3001) => {
 
   return new Promise((resolve, reject) => {
     server.listen(port, () => {
-      console.log(`Auth Server listening on localhost:${port}`);
+      console.log(`Auth Server listening on http://localhost:${port}`);
       return resolve(server);
     });
 

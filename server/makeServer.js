@@ -21,7 +21,7 @@ const makeServer = async (port = 3000) => {
 
   return new Promise((resolve, reject) => {
     server.listen(port, () => {
-      console.log(`Static server listening on localhost:${port}`);
+      console.log(`Static server listening on http://localhost:${port}`);
       return resolve(server);
     });
 
