@@ -16,7 +16,7 @@ const useForm = initialValues => {
 const queryReducer = (s, a) => {
   switch (a.type) {
     case 'fetch':
-      return { ...s, status: 'LOADING' };
+      return { ...s, status: 'LOADING', errorMessage: '' };
     case 'fetch_success':
       console.log(`success:`, a.payload);
       return { ...s, status: 'SUCCESS', data: a.payload };
@@ -38,7 +38,7 @@ const useFetch = () => {
   return { ...state, dispatch };
 };
 
-const Login = ({ endpoint }) => {
+const Login = ({ id, endpoint }) => {
   const { handleChange, values } = useForm({ username: '', password: '' });
   const { status, data, errorMessage, dispatch } = useFetch();
   const { logIn } = useAuth();
@@ -66,14 +66,21 @@ const Login = ({ endpoint }) => {
   return (
     <form onSubmit={handleSubmit}>
       <div className="column">
-        <input placeholder="Name" name="username" value={values.username} onChange={handleChange} />
+        <input
+          data-testid={`${id}-login-input`}
+          placeholder="Name"
+          name="username"
+          value={values.username}
+          onChange={handleChange}
+        />
         <input
           name="password"
+          data-testid={`${id}-password-input`}
           placeholder="Password"
           value={values.password}
           onChange={handleChange}
         />
-        <button type="submit" disabled={isLoading}>
+        <button data-testid={`${id}-login-submit`} type="submit" disabled={isLoading}>
           Log In
         </button>
         {status === 'ERROR' && <h1 className="error">Error: {errorMessage}</h1>}
@@ -84,8 +91,7 @@ const Login = ({ endpoint }) => {
   );
 };
 
-const SendMessage = ({ endpoint }) => {
-  // TODO: Why is handleChange causing AuthContext to update?
+const SendMessage = ({ id, endpoint }) => {
   const { handleChange, values } = useForm({ secureMessage: '' });
   const { status, data, errorMessage, dispatch } = useFetch();
   const { token } = useAuth();
@@ -112,10 +118,11 @@ const SendMessage = ({ endpoint }) => {
       <input
         placeholder="Send a message"
         name="secureMessage"
+        data-testid={`${id}-input`}
         value={values.secureMessage}
         onChange={handleChange}
       />
-      <button type="submit" disabled={isLoading}>
+      <button data-testid={`${id}-submit`} type="submit" disabled={isLoading}>
         Send
       </button>
       {errorMessage && <h1 className="error">Error: {errorMessage}</h1>}
@@ -125,13 +132,16 @@ const SendMessage = ({ endpoint }) => {
   );
 };
 
+// TODO: Change endpoint to id
 const Auth = ({ endpoint }) => {
   const auth = useAuth();
-  // TODO: Either Login or SendMessage
+
+  const id = endpoint.slice(1);
+
   return (
     <>
-      <Login endpoint={endpoint} />
-      {auth.isLoggedIn && <SendMessage endpoint={endpoint} />}
+      <Login endpoint={endpoint} id={id} />
+      <SendMessage endpoint={endpoint} id={id} />
     </>
   );
 };

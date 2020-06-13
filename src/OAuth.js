@@ -39,13 +39,14 @@ const OAuth = () => {
           Authorize with OAuth
         </button>
         <input
+          data-testid="oauth-message-input"
           placeholder="Post a message after you log in"
           onChange={e => setMessage(e.target.value)}
           value={message}
         />
-        <button type="submit">Send message</button>
+        <button type="submit">Send OAuth message</button>
         {secureData && <pre>{secureData}</pre>}
-        {errorMessage && <pre>{errorMessage}</pre>}
+        {errorMessage && <h1 className="error">Error: {errorMessage}</h1>}
       </div>
     </form>
   );
