@@ -6,6 +6,6 @@ steps:
     command: yarn && yarn test
     plugins:
       - docker#v3.2.0:
-          image: node:12-alpine
+          image: node:12
           # Is this necessary?
           workdir: /app
