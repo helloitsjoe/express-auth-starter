@@ -1,3 +1,6 @@
 steps:
   - label: 'Testing :musical_note:'
     command: echo "Hello!"
+
+  - label: 'Running jest tests'
+    command: yarn test
