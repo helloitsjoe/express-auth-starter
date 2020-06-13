@@ -3,4 +3,4 @@ steps:
     command: echo "Hello!"
 
   - label: 'Running jest tests'
-    command: yarn test
+    command: npm test
