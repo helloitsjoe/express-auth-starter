@@ -5,7 +5,7 @@ steps:
   - label: 'Running jest tests'
     command: yarn && yarn test
     plugins:
-      - docker#v3.2.0
+      - docker#v3.2.0:
           image: node:12-alpine
           # Is this necessary?
           workdir: /app
