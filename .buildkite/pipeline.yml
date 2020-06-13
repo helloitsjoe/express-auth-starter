@@ -3,4 +3,9 @@ steps:
     command: echo "Hello!"
 
   - label: 'Running jest tests'
-    command: npm test
+    command: yarn && yarn test
+    plugins:
+      - docker#v3.2.0
+          image: node:12-alpine
+          # Is this necessary?
+          workdir: /app
