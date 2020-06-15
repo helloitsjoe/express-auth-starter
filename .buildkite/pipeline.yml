@@ -10,3 +10,5 @@ steps:
           always-pull: true
           # Is this necessary?
           # workdir: /app
+          volumes:
+            - '/var/run/docker.sock:/var/run/docker.sock'
