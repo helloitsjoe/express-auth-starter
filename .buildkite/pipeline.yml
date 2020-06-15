@@ -6,7 +6,7 @@ steps:
     command: npm install && npm test
     plugins:
       - docker#v3.5.0:
-          image: 'node:12'
+          image: 'node:12-alpine'
           # always-pull: true
           # Is this necessary?
           # workdir: /app
