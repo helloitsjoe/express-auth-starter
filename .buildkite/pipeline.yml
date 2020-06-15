@@ -3,10 +3,8 @@ steps:
     command: echo "Hello!"
 
   - label: 'Running tests'
-    command: npm install && npm test
+    command: yarn && yarn test
+    # How to use docker?
     # plugins:
     #   - docker#v3.5.0:
     #       image: 'node:12-alpine'
-    # always-pull: true
-    # Is this necessary?
-    # workdir: /app
