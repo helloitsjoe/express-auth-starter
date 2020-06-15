@@ -7,8 +7,6 @@ steps:
     plugins:
       - docker#v3.5.0:
           image: 'node:10'
-          always-pull: true
+          # always-pull: true
           # Is this necessary?
           # workdir: /app
-          volumes:
-            - '/var/run/docker.sock:/var/run/docker.sock'
