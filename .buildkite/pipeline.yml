@@ -3,7 +3,7 @@ steps:
     command: echo "Hello!"
 
   - label: 'Running tests'
-    command: yarn && yarn test
+    command: npm install && npm test
     plugins:
       - docker#v3.2.0:
           image: node:12
