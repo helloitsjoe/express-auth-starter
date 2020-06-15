@@ -1,0 +1,12 @@
+steps:
+  - label: 'Testing :musical_note:'
+    command: echo "Hello!"
+
+  - label: 'Running tests'
+    command: npm install && npm test
+    plugins:
+      - docker#v3.5.0:
+          image: 'node:10'
+          # always-pull: true
+          # Is this necessary?
+          # workdir: /app
