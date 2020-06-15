@@ -9,4 +9,4 @@ steps:
           image: 'node:12-alpine'
           # always-pull: true
           # Is this necessary?
-          workdir: /app
+          # workdir: /app
