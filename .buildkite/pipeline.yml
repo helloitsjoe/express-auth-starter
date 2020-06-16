@@ -2,9 +2,12 @@ steps:
   - label: 'Testing :musical_note:'
     command: echo "Hello!"
 
-  - label: 'Running tests'
+  - label: 'Jest tests'
     command: yarn && yarn test
+
     # How to use docker?
     # plugins:
     #   - docker#v3.5.0:
     #       image: 'node:12-alpine'
+  - label: 'Cypress Tests'
+    command: yarn cypress run
