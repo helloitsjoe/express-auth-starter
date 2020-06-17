@@ -17,7 +17,7 @@ steps:
     #   - docker#v3.5.0:
     #       image: 'node:12-alpine'
   - label: 'Start server'
-    command: yarn && yarn start
+    command: yarn && yarn start &
 
   - wait
 
