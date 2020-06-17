@@ -11,7 +11,9 @@ steps:
 
   - 'wait'
 
-  - command: '$(npm bin)/cypress version'
+  - command: ls -la node_modules
+
+  - command: $(npm bin)/cypress version
 
   - label: 'Jest tests'
     command: npm test
