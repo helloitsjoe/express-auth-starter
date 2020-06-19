@@ -1,7 +1,4 @@
 steps:
-  # - label: 'Testing :musical_note:'
-  #   command: echo "Hello!"
-
   # TODO: Figure out how to pass artifacts across steps
   # - label: 'Install'
   #   command: yarn
@@ -10,8 +7,6 @@ steps:
 
   - label: 'Jest tests'
     command: yarn --frozen-lockfile && yarn test
-  # depends_on: 'install'
-  # How to use docker?
 
   # - wait
 

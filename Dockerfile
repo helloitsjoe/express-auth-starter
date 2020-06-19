@@ -5,7 +5,7 @@ WORKDIR /app
 # TODO: Separate packages for front/backend
 COPY package.json yarn.lock ./
 
-RUN yarn
+RUN yarn --frozen-lockfile
 
 COPY . .
 
