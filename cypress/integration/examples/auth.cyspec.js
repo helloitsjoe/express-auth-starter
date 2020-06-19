@@ -5,7 +5,7 @@ const testId = id => `[data-testid="${id}"]`;
 
 describe('Auth', () => {
   beforeEach(() => {
-    cy.visit('http://localhost:3000');
+    cy.visit('/');
   });
 
   describe('JWT', () => {

@@ -41,7 +41,8 @@
     "start": "nodemon ./server",
     "build": "webpack",
     "watch": "webpack --watch",
-    "cy:run": "cypress run"
+    "cy:run": "cypress run",
+    "cy:run:ci": "docker-compose up --exit-code-from cypress"
   },
   "repository": {
     "type": "git",

@@ -5,21 +5,20 @@ steps:
   # TODO: Figure out how to pass artifacts across steps
   # - label: 'Install'
   #   command: yarn
-  # key: 'install'
   # artifact_paths:
   #   - 'node_modules/**/*'
 
-  # - label: 'Jest tests'
-  #   command: yarn && yarn test
+  - label: 'Jest tests'
+    command: yarn && yarn test
   # depends_on: 'install'
   # How to use docker?
-  # plugins:
-  #   - docker#v3.5.0:
-  #       image: 'node:12-alpine'
-  # - label: 'Start server'
-  #   command: |
-  #     yarn && yarn start & yarn cypress run
+
   # - wait
+
   - label: 'Cypress Tests'
-    command: yarn && la node_modules
+    command: 'yarn && yarn cy:run:ci'
+    # plugins:
+    # - docker-compose#v3.3.0
+    # run: auth
+    # command: yarn && yarn cy:run
   # depends_on: 'install'

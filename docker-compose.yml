@@ -1,0 +1,18 @@
+version: '3'
+
+services:
+  auth:
+    build:
+      context: .
+    ports:
+      - '3000:3000'
+      - '3001:3001'
+  cypress:
+    image: cypress/included:4.4.0
+    depends_on:
+      - auth
+    environment:
+      - CYPRESS_baseUrl=http://auth:3000
+    working_dir: /e2e
+    volumes:
+      - .:/e2e
