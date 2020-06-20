@@ -11,6 +11,7 @@ steps:
 
   - label: ':jest: Jest tests'
     command: |
+      buildkite-agent download node_modules.tar.gz
       tar -xf node_modules.tar.gz node_modules
       yarn test
 
