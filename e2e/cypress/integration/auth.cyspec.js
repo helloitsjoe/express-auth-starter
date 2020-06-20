@@ -11,7 +11,7 @@ describe('Auth', () => {
   describe('JWT', () => {
     it('Returns error before logging in', () => {
       cy.get(testId('jwt-input')).type('test');
-      cy.get('.error').should('be.visible');
+      cy.get('.error').should('not.be.visible');
 
       cy.get(testId('jwt-submit')).click();
       cy.get('.error').should('be.visible');
