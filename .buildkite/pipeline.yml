@@ -13,7 +13,7 @@ steps:
   - label: ':cypress: Cypress Tests'
     # command: 'yarn cy:run:ci'
     plugins:
-      - docker-compose#v3.3.0
+      - docker-compose#v3.3.0:
           run: cypress
           build:
             - auth
