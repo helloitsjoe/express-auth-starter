@@ -14,9 +14,9 @@ steps:
     # command: 'yarn cy:run:ci'
     plugins:
       - docker-compose#v3.3.0:
-          # run: cypress
-          build:
-            - auth
-            - cypress
+          run: cypress
+          # build:
+          #   - auth
+          #   - cypress
     # command: yarn && yarn cy:run
   # depends_on: 'install'
