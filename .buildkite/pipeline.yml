@@ -1,5 +1,7 @@
 steps:
-  # TODO: Figure out how to pass artifacts across steps
+  # Currently steps are faster without artifact,
+  # leaving this here for reference.
+
   # - label: 'Install'
   #   command: |
   #     yarn --frozen-lockfile
@@ -10,18 +12,18 @@ steps:
   # - wait
 
   - label: ':eslint: Lint'
+    command: yarn && yarn lint
     # command: |
     #   buildkite-agent artifact download node_modules.tar.gz .
     #   tar -xf node_modules.tar.gz node_modules
     #   yarn lint
-    command: yarn && yarn lint
 
   - label: ':jest: Jest tests'
+    command: yarn && yarn test
     # command: |
     #   buildkite-agent artifact download node_modules.tar.gz .
     #   tar -xf node_modules.tar.gz node_modules
     #   yarn test
-    command: yarn && yarn test
 
   - label: ':cypress: Cypress Tests'
     # command: 'yarn cy:run:ci'
