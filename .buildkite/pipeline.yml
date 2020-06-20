@@ -10,7 +10,7 @@ steps:
   - wait
 
   - label: ':eslint: Lint'
-    command: yarn eslint "**/*.js" --ignore-pattern public/
+    command: yarn lint
 
   - label: ':jest: Jest tests'
     command: |
