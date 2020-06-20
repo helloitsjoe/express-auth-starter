@@ -8,9 +8,10 @@ services:
       - '3000:3000'
       - '3001:3001'
   cypress:
-    # image: cypress/included:4.4.0
+    # Using dockerfile instead of image to COPY instead of volumes
     build:
       context: ./e2e
+    # image: cypress/included:4.4.0
     depends_on:
       - auth
     environment:
