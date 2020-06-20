@@ -41,7 +41,7 @@
     "webpack-simple": "^1.5.2"
   },
   "scripts": {
-    "lint": "eslint '**/*.js' --ignore-pattern public/",
+    "lint": "$(yarn bin)/eslint '**/*.js' --ignore-pattern public/",
     "test": "jest --verbose",
     "start": "nodemon ./server",
     "build": "webpack",
