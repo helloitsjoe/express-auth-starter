@@ -9,6 +9,9 @@ steps:
 
   - wait
 
+  - label: ':eslint: Lint'
+    command: yarn eslint "**/*.js" --ignore-pattern public/
+
   - label: ':jest: Jest tests'
     command: |
       buildkite-agent artifact download node_modules.tar.gz .
