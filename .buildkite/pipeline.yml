@@ -10,7 +10,10 @@ steps:
   - wait
 
   - label: ':eslint: Lint'
-    command: yarn lint
+    command: |
+      buildkite-agent artifact download node_modules.tar.gz .
+      tar -xf node_modules.tar.gz node_modules
+      yarn lint
 
   - label: ':jest: Jest tests'
     command: |
