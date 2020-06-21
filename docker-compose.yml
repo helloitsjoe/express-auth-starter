@@ -16,6 +16,3 @@ services:
       - auth
     environment:
       - CYPRESS_baseUrl=http://auth:3000
-    # working_dir: /e2e
-    # volumes:
-    #   - .:/e2e

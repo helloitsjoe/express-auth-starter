@@ -1,3 +1,5 @@
+/* eslint-disable react/prop-types */
+
 import React from 'react';
 import { login, sendSecure } from './services';
 import { withAuthProvider, useAuth } from './AuthContext';
@@ -108,8 +110,8 @@ const SendMessage = ({ id, endpoint }) => {
         dispatch({ type: 'fetch_success', payload: res.data });
       })
       .catch(err => {
-        const { message } = (err.response && err.response.data) || err;
-        dispatch({ type: 'fetch_error', payload: message || err.response.status });
+        const { message: errMessage } = (err.response && err.response.data) || err;
+        dispatch({ type: 'fetch_error', payload: errMessage || err.response.status });
       });
   };
 
@@ -134,8 +136,6 @@ const SendMessage = ({ id, endpoint }) => {
 
 // TODO: Change endpoint to id
 const Auth = ({ endpoint }) => {
-  const auth = useAuth();
-
   const id = endpoint.slice(1);
 
   return (
