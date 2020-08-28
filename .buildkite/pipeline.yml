@@ -1,22 +1,32 @@
 steps:
-  # TODO: Figure out how to pass artifacts across steps
-  # - label: 'Install'
-  #   command: yarn
-  # artifact_paths:
-  #   - 'node_modules/**/*'
+  # Currently steps are faster without artifact,
+  # leaving this here for reference.
 
-  - label: ':jest: Jest tests'
-    command: yarn --frozen-lockfile && yarn test
+  # - label: 'Install'
+  #   command: |
+  #     yarn --frozen-lockfile
+  #     tar -czf node_modules.tar.gz node_modules
+  #   artifact_paths:
+  #     - 'node_modules.tar.gz'
 
   # - wait
+
+  - label: ':eslint: Lint'
+    command: yarn && yarn lint
+    # command: |
+    #   buildkite-agent artifact download node_modules.tar.gz .
+    #   tar -xf node_modules.tar.gz node_modules
+    #   yarn lint
+
+  - label: ':jest: Jest tests'
+    command: yarn && yarn test
+    # command: |
+    #   buildkite-agent artifact download node_modules.tar.gz .
+    #   tar -xf node_modules.tar.gz node_modules
+    #   yarn test
 
   - label: ':cypress: Cypress Tests'
     # command: 'yarn cy:run:ci'
     plugins:
       - docker-compose#v3.3.0:
           run: cypress
-          # build:
-          #   - auth
-          #   - cypress
-    # command: yarn && yarn cy:run
-  # depends_on: 'install'
