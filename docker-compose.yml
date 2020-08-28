@@ -7,6 +7,19 @@ services:
     ports:
       - '3000:3000'
       - '3001:3001'
+    command: node server/index.js
+  shell:
+    build:
+      context: .
+    ports:
+      - '3000:3000'
+      - '3001:3001'
+    tty: true
+    stdin_open: true
+    command: /bin/bash
+    volumes:
+      - .:/app
+      - node_modules:/app/node_modules
   cypress:
     # Using dockerfile instead of image to COPY instead of volumes
     build:
@@ -19,3 +32,6 @@ services:
     # working_dir: /e2e
     # volumes:
     #   - .:/e2e
+
+volumes:
+  node_modules:

@@ -1,4 +1,4 @@
-FROM node:12-alpine
+FROM node:12
 
 WORKDIR /app
 
@@ -9,4 +9,4 @@ RUN yarn
 
 COPY . .
 
-CMD ["node", "server/index.js"]
+# CMD ["node", "server/index.js"]
