@@ -25,8 +25,9 @@ router.post('/login', (req, res) => {
 });
 
 router.post('/secure', (req, res) => {
+  const { authorization } = req.headers;
   try {
-    const token = req.headers.authorization.split('Bearer ')[1];
+    const token = authorization.split('Bearer ')[1];
     // JWT has build in expiration check
     const decoded = jwt.verify(token, 'mysecret');
     return res.json({ message: `Hi from JWT, ${decoded.username}!` });
