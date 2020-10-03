@@ -3,27 +3,33 @@
  */
 const axios = require('axios');
 const makeAuthServer = require('../makeAuthServer');
+const { makeDb } = require('../dbMiddleware');
+const { silenceLogsMatching } = require('../test-utils');
 
-const PORT = 1235;
-const rootUrl = `http://localhost:${PORT}`;
+console.log = silenceLogsMatching('Auth Server listening')(console.log);
+console.error = silenceLogsMatching('Error verifying token')(console.error);
+
+const getRootUrl = port => `http://localhost:${port}`;
 
 let server;
-beforeAll(async () => {
-  server = await makeAuthServer(PORT);
+let port;
+let rootUrl;
+
+beforeEach(async () => {
+  const db = makeDb();
+  // Passing port 0 to server assigns a random port
+  server = await makeAuthServer(0, db);
+  port = server.address().port;
+  rootUrl = getRootUrl(port);
 });
 
-afterAll(done => {
+afterEach(done => {
   server.close(done);
 });
 
 test('listens on given port', () => {
   const actualPort = server.address().port;
-  expect(actualPort).toBe(PORT);
-});
-
-test('returns server if already listening', async () => {
-  const listeningServer = await makeAuthServer(PORT);
-  expect(listeningServer).toBe(server);
+  expect(typeof actualPort).toBe('number');
 });
 
 describe('oauth', () => {
@@ -65,11 +71,9 @@ describe('jwt', () => {
 
   describe('/login', () => {
     it('returns token', async () => {
-      // TODO: Seed data and isolate tests
-      const res = await axios.post(`${rootUrl}/jwt/login`, {
-        username: 'foo',
-        password: 'bar',
-      });
+      const body = { username: 'foo', password: 'bar' };
+      await axios.post(`${rootUrl}/jwt/signup`, body);
+      const res = await axios.post(`${rootUrl}/jwt/login`, body);
       expect(res.data.token).toMatch(/\w+.\w+.\w+/);
     });
 
@@ -85,8 +89,10 @@ describe('jwt', () => {
         });
     });
 
-    it('returns error if password does not match', () => {
+    it('returns error if password does not match', async () => {
       expect.assertions(1);
+      const body = { username: 'foo', password: 'bar' };
+      await axios.post(`${rootUrl}/jwt/signup`, body);
       return axios
         .post(`${rootUrl}/jwt/login`, {
           username: 'foo',
@@ -99,8 +105,41 @@ describe('jwt', () => {
   });
 
   describe('/secure', () => {
-    it.todo('returns error if no token');
-    it.todo('returns error if invalid token');
-    it.todo('returns response if valid token');
+    let body;
+    let token;
+
+    beforeEach(async () => {
+      body = { username: 'foo', password: 'bar' };
+      await axios.post(`${rootUrl}/jwt/signup`, body);
+      const res = await axios.post(`${rootUrl}/jwt/login`, body);
+      token = res.data.token;
+      expect(res.data.token).toMatch(/\w+.\w+.\w+/);
+    });
+
+    it('returns error if no token', async () => {
+      expect.assertions(2);
+      return axios.post(`${rootUrl}/jwt/secure`, body).catch(err => {
+        expect(err.response.data.message).toMatch(/Authorization header is required/i);
+      });
+    });
+
+    it('returns error if header is malformed', async () => {
+      expect.assertions(2);
+      // Missing 'Bearer ';
+      const options = { headers: { Authorization: token } };
+      return axios.post(`${rootUrl}/jwt/secure`, body, options).catch(err => {
+        expect(err.response.data.message).toMatch(/Unauthorized! jwt must be provided/i);
+      });
+    });
+
+    it('returns error if invalid token', async () => {
+      expect.assertions(2);
+      const options = { headers: { Authorization: 'Bearer nope.nope.nope' } };
+      return axios.post(`${rootUrl}/jwt/secure`, body, options).catch(err => {
+        expect(err.response.data.message).toMatch(/Unauthorized! invalid token/i);
+      });
+    });
+
+    xit('returns response if valid token', async () => {});
   });
 });
