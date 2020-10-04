@@ -116,6 +116,13 @@ describe('jwt', () => {
       expect(res.data.token).toMatch(/\w+.\w+.\w+/);
     });
 
+    it('returns response if valid token', async () => {
+      expect.assertions(2);
+      const options = { headers: { Authorization: `Bearer ${token}` } };
+      const res = await axios.post(`${rootUrl}/jwt/secure`, body, options);
+      expect(res.data.message).toMatch('Hi from JWT, foo!');
+    });
+
     it('returns error if no token', async () => {
       expect.assertions(2);
       return axios.post(`${rootUrl}/jwt/secure`, body).catch(err => {
@@ -139,7 +146,5 @@ describe('jwt', () => {
         expect(err.response.data.message).toMatch(/Unauthorized! invalid token/i);
       });
     });
-
-    xit('returns response if valid token', async () => {});
   });
 });
