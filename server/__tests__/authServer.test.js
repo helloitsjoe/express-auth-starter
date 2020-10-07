@@ -148,3 +148,14 @@ describe('jwt', () => {
     });
   });
 });
+
+describe('session', () => {
+  describe('/login', () => {
+    it('returns token', () => {
+      const body = { username: 'foo', password: 'bar' };
+      return axios.post(`${rootUrl}/session/login`, body).then(res => {
+        expect(res.data.token).toMatch(/\w+.\w+.\w+/);
+      });
+    });
+  });
+});
