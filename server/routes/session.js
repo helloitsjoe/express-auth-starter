@@ -6,23 +6,25 @@ const router = express.Router();
 
 const tokens = new Map();
 
+const EXPIRATION = process.env.NODE_ENV === 'test' ? 1 : ONE_HOUR_IN_SECONDS;
+
 const handleLogin = ({ username, password }) => {
-  const message = `Username: ${username} | Password: ${password}`;
+  // const message = `Username: ${username} | Password: ${password}`;
   // TODO: Check password
-  console.log(message);
+  // console.log(message);
   if (!username || !password) {
     return makeResponse({ message: 'Username and password are both required.', status: 401 });
   }
   const token = generateRandom(50);
   // TODO: Make expired error
-  const expires_in = ONE_HOUR_IN_SECONDS;
+  const expires_in = EXPIRATION;
   tokens.set(token, { username, expires_in });
   return makeResponse({ token });
 };
 
 router.post('/login', (req, res) => {
   const { status, ...rest } = handleLogin(req.body);
-  console.log(status, rest);
+  // console.log(status, rest);
   res.status(status).json(rest);
 });
 

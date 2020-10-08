@@ -8,6 +8,8 @@ const router = express.Router();
 
 const SALT_ROUNDS = 1;
 
+const EXPIRATION = process.env.NODE_ENV === 'test' ? 1 : ONE_HOUR_IN_SECONDS;
+
 const handleSignUp = async ({ username, password }, users) => {
   if (!username || !password) {
     return makeResponse({ message: 'Username and password are both required.', status: 401 });
@@ -19,7 +21,7 @@ const handleSignUp = async ({ username, password }, users) => {
   const hash = await bcrypt.hash(password, SALT_ROUNDS).catch(console.error);
   users.set(username, hash);
 
-  const token = jwt.sign({ username, exp: ONE_HOUR_IN_SECONDS }, 'mysecret');
+  const token = jwt.sign({ username }, 'mysecret', { expiresIn: EXPIRATION });
   return makeResponse({ token });
 };
 
@@ -38,7 +40,7 @@ const handleLogin = async ({ username, password }, users) => {
     return makeResponse({ message: `Wrong password for user ${username}`, status: 401 });
   }
 
-  const token = jwt.sign({ username }, 'mysecret', { expiresIn: ONE_HOUR_IN_SECONDS });
+  const token = jwt.sign({ username }, 'mysecret', { expiresIn: EXPIRATION });
   return makeResponse({ token });
 };
 
