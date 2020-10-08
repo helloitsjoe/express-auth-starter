@@ -12,7 +12,6 @@ console.error = silenceLogsMatching('Error verifying token')(console.error);
 const getRootUrl = port => `http://localhost:${port}`;
 
 let server;
-let port;
 let rootUrl;
 
 const jwtRegEx = new RegExp(/^[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*$/);
@@ -21,7 +20,7 @@ beforeEach(async () => {
   const db = makeDb();
   // Passing port 0 to server assigns a random port
   server = await makeAuthServer(0, db);
-  port = server.address().port;
+  const { port } = server.address();
   rootUrl = getRootUrl(port);
 });
 

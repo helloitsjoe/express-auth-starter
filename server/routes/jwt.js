@@ -8,7 +8,7 @@ const router = express.Router();
 
 const SALT_ROUNDS = 1;
 
-const EXPIRATION = process.env.NODE_ENV === 'test' ? 1 : ONE_HOUR_IN_SECONDS;
+const EXPIRATION = process.env.TOKEN_EXPIRATION || ONE_HOUR_IN_SECONDS;
 
 const handleSignUp = async ({ username, password }, users) => {
   if (!username || !password) {
