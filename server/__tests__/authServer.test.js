@@ -175,12 +175,37 @@ describe('jwt', () => {
 });
 
 describe('session', () => {
-  describe('/login', () => {
-    it('returns token for valid login', () => {
+  describe('/signup', () => {
+    it('returns token for valid signup', async () => {
       const body = { username: 'foo', password: 'bar' };
-      return axios.post(`${rootUrl}/session/login`, body).then(res => {
-        expect(typeof res.data.token).toBe('string');
+      const res = await axios.post(`${rootUrl}/session/signup`, body);
+      expect(typeof res.data.token).toBe('string');
+    });
+
+    it('returns error if no username', () => {
+      expect.assertions(2);
+      const body = { password: 'bar' };
+      return axios.post(`${rootUrl}/session/signup`, body).catch(err => {
+        expect(err.response.status).toBe(401);
+        expect(err.response.data.message).toMatch(/username/i);
       });
+    });
+
+    it('returns error if no password', () => {
+      expect.assertions(2);
+      const body = { username: 'bar' };
+      return axios.post(`${rootUrl}/session/signup`, body).catch(err => {
+        expect(err.response.status).toBe(401);
+        expect(err.response.data.message).toMatch(/password/i);
+      });
+    });
+  });
+
+  describe('/login', () => {
+    it('returns token for valid login', async () => {
+      const body = { username: 'foo', password: 'bar' };
+      const res = await axios.post(`${rootUrl}/session/login`, body);
+      expect(typeof res.data.token).toBe('string');
     });
 
     it('returns error if no username', () => {
