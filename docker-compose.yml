@@ -9,7 +9,7 @@ services:
       - "3001:3001"
     command: node server/index.js
 
-  shell:
+  dev:
     image: node:12
     ports:
       - "3000:3000"
