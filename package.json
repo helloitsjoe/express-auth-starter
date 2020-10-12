@@ -43,7 +43,7 @@
   },
   "scripts": {
     "lint": "eslint '**/*.js' --ignore-pattern public/",
-    "test": "jest --verbose",
+    "test": "jest --runInBand",
     "start": "nodemon ./server",
     "build": "webpack",
     "watch": "webpack --watch",

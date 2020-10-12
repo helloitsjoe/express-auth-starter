@@ -9,13 +9,18 @@ const { silenceLogsMatching } = require('../test-utils');
 console.log = silenceLogsMatching('Auth Server listening')(console.log);
 console.error = silenceLogsMatching('Error verifying token')(console.error);
 
-const getRootUrl = port => `http://localhost:${port}`;
-
+let db;
+let err;
 let server;
 let rootUrl;
 
+const getRootUrl = port => `http://localhost:${port}`;
+const setError = e => {
+  err = e;
+};
+
 beforeEach(async () => {
-  const db = makeDb();
+  db = makeDb();
   // Passing port 0 to server assigns a random port
   server = await makeAuthServer(0, db);
   const { port } = server.address();
@@ -23,6 +28,9 @@ beforeEach(async () => {
 });
 
 afterEach(done => {
+  db = null;
+  err = null;
+  rootUrl = null;
   server.close(done);
 });
 
@@ -48,34 +56,33 @@ describe('session', () => {
       expect(typeof res.data.token).toBe('string');
     });
 
-    it('returns error if no username', () => {
-      expect.assertions(2);
+    it('returns error if no username', async () => {
       const body = { password: 'bar' };
-      return axios.post(`${rootUrl}/session/signup`, body).catch(err => {
-        expect(err.response.status).toBe(401);
-        expect(err.response.data.message).toMatch(/username/i);
-      });
+      await axios.post(`${rootUrl}/session/signup`, body).catch(setError);
+      expect(err.response.status).toBe(401);
+      expect(err.response.data.message).toMatch(/username/i);
     });
 
-    it('returns error if no password', () => {
-      expect.assertions(2);
+    it('returns error if no password', async () => {
       const body = { username: 'bar' };
-      return axios.post(`${rootUrl}/session/signup`, body).catch(err => {
-        expect(err.response.status).toBe(401);
-        expect(err.response.data.message).toMatch(/password/i);
-      });
+      await axios.post(`${rootUrl}/session/signup`, body).catch(setError);
+      expect(err.response.status).toBe(401);
+      expect(err.response.data.message).toMatch(/password/i);
     });
 
     it('returns error if user already exists', async () => {
-      expect.assertions(2);
       const body = { username: 'foo', password: 'bar' };
       await axios.post(`${rootUrl}/session/signup`, body);
-      try {
-        await axios.post(`${rootUrl}/session/signup`, body);
-      } catch (err) {
-        expect(err.response.status).toBe(401);
-        expect(err.response.data.message).toMatch(/username already exists/i);
-      }
+      await axios.post(`${rootUrl}/session/signup`, body).catch(setError);
+      expect(err.response.status).toBe(401);
+      expect(err.response.data.message).toMatch(/username already exists/i);
+    });
+
+    it('does not store plaintext password', async () => {
+      const body = { username: 'foo', password: 'bar' };
+      await axios.post(`${rootUrl}/session/signup`, body);
+      expect(typeof db.users.get(body.username)).toBe('string');
+      expect(db.users.get(body.username)).not.toMatch(body.password);
     });
   });
 
@@ -87,39 +94,35 @@ describe('session', () => {
       expect(typeof res.data.token).toBe('string');
     });
 
-    it('returns error if no username', () => {
+    it('returns error if no username', async () => {
       expect.assertions(2);
       const body = { password: 'bar' };
-      return axios.post(`${rootUrl}/session/login`, body).catch(err => {
-        expect(err.response.status).toBe(401);
-        expect(err.response.data.message).toMatch(/username and password are both required/i);
-      });
+      await axios.post(`${rootUrl}/session/login`, body).catch(setError);
+      expect(err.response.status).toBe(401);
+      expect(err.response.data.message).toMatch(/username and password are both required/i);
     });
 
-    it('returns error if no password', () => {
-      expect.assertions(2);
+    it('returns error if no password', async () => {
       const body = { username: 'foo' };
-      return axios.post(`${rootUrl}/session/login`, body).catch(err => {
-        expect(err.response.status).toBe(401);
-        expect(err.response.data.message).toMatch(/username and password are both required/i);
-      });
+      await axios.post(`${rootUrl}/session/login`, body).catch(setError);
+      expect(err.response.status).toBe(401);
+      expect(err.response.data.message).toMatch(/username and password are both required/i);
     });
 
     it('returns error if password does not match', async () => {
-      expect.assertions(2);
       const body = { username: 'foo', password: 'bar' };
       await axios.post(`${rootUrl}/session/signup`, body);
-      try {
-        const wrongPassword = { username: 'foo', password: 'not-bar' };
-        await axios.post(`${rootUrl}/session/login`, wrongPassword);
-      } catch (err) {
-        expect(err.response.status).toBe(401);
-        expect(err.response.data.message).toMatch(/username and password do not match/i);
-      }
+      const wrong = { username: 'foo', password: 'not-bar' };
+      await axios.post(`${rootUrl}/session/login`, wrong).catch(setError);
+      expect(err.response.status).toBe(401);
+      expect(err.response.data.message).toMatch(/username and password do not match/i);
     });
 
-    it('returns error if username does not exist', () => {
-      //
+    it('returns error if username does not exist', async () => {
+      const body = { username: 'foo', password: 'bar' };
+      await axios.post(`${rootUrl}/session/login`, body).catch(setError);
+      expect(err.response.status).toBe(401);
+      expect(err.response.data.message).toMatch(/username does not exist/i);
     });
   });
 
@@ -128,7 +131,6 @@ describe('session', () => {
     let token;
 
     beforeEach(async () => {
-      // jest.useFakeTimers('modern');
       body = { username: 'foo', password: 'bar' };
       await axios.post(`${rootUrl}/session/signup`, body);
       const res = await axios.post(`${rootUrl}/session/login`, body);
@@ -143,18 +145,15 @@ describe('session', () => {
     });
 
     it('returns error if no token', async () => {
-      expect.assertions(2);
-      return axios.post(`${rootUrl}/session/secure`, body).catch(err => {
-        expect(err.response.data.message).toMatch(/Unauthorized!/i);
-      });
+      await axios.post(`${rootUrl}/session/secure`, body).catch(setError);
+      expect(err.response.data.message).toMatch(/Unauthorized!/i);
     });
 
     it('returns error if invalid token', async () => {
       expect.assertions(2);
       const options = { headers: { Authorization: `Bearer not-token` } };
-      return axios.post(`${rootUrl}/session/secure`, body, options).catch(err => {
-        expect(err.response.data.message).toMatch(/Unauthorized!/i);
-      });
+      await axios.post(`${rootUrl}/session/secure`, body, options).catch(setError);
+      expect(err.response.data.message).toMatch(/Unauthorized!/i);
     });
 
     // it('returns error if expired token', () => {
@@ -167,5 +166,11 @@ describe('session', () => {
     //     expect(err.response.data.message).toMatch(/Unauthorized!/i);
     //   });
     // });
+  });
+
+  describe('/revoke', () => {
+    it.todo('revokes token with valid username');
+    it.todo('responds with 400 if no token exists for username');
+    it.todo('TODO: Experiment with postgres/sqlite');
   });
 });
