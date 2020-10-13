@@ -1,7 +1,7 @@
 const makeDb = () => ({ users: new Map(), tokens: new Map() });
 
 const makeDbMiddleware = db => (req, res, next) => {
-  req.context = { ...req.context, db };
+  req.db = db;
   next();
 };
 

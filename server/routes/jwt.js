@@ -45,12 +45,12 @@ const handleLogin = async ({ username, password }, users) => {
 };
 
 router.post('/signup', async (req, res) => {
-  const { status, ...rest } = await handleSignUp(req.body, req.context.db.users);
+  const { status, ...rest } = await handleSignUp(req.body, req.db.users);
   res.status(status).json(rest);
 });
 
 router.post('/login', async (req, res) => {
-  const { status, ...rest } = await handleLogin(req.body, req.context.db.users);
+  const { status, ...rest } = await handleLogin(req.body, req.db.users);
   // console.log(status, rest);
   res.status(status).json(rest);
 });

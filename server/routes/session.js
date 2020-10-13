@@ -46,18 +46,18 @@ const handleLogin = async ({ username, password }, db) => {
 };
 
 router.post('/signup', async (req, res) => {
-  const { status, ...rest } = await handleSignUp(req.body, req.context.db);
+  const { status, ...rest } = await handleSignUp(req.body, req.db);
   res.status(status).json(rest);
 });
 
 router.post('/login', async (req, res) => {
-  const { status, ...rest } = await handleLogin(req.body, req.context.db);
+  const { status, ...rest } = await handleLogin(req.body, req.db);
   res.status(status).json(rest);
 });
 
 router.post('/secure', (req, res) => {
   const { authorization } = req.headers;
-  const { tokens } = req.context.db;
+  const { tokens } = req.db;
   // TODO: Middleware for removing bearer and checking username/password
   const token = authorization && authorization.split('Bearer ')[1];
   if (!tokens.has(token)) {
@@ -71,9 +71,8 @@ router.post('/secure', (req, res) => {
 
 router.post('/revoke', (req, res) => {
   // TODO: admin auth
-  const { tokens } = req.context.db;
+  const { tokens } = req.db;
   const { token } = req.body;
-
   // eslint-disable-next-line no-restricted-syntax
   if (!tokens.has(token)) {
     return res.status(404).json({ message: 'Token not found!' });
