@@ -171,6 +171,7 @@ describe('session', () => {
   describe('/revoke', () => {
     let body;
     let token;
+    let options;
 
     beforeEach(async () => {
       body = { username: 'foo', password: 'bar' };
@@ -178,6 +179,10 @@ describe('session', () => {
       // const res = await axios.post(`${rootUrl}/session/login`, body);
       token = res.data.token;
       expect(res.data.token).toMatch(/\w+/);
+
+      options = { headers: { Authorization: `Bearer ${token}` } };
+      const secureRes = await axios.post(`${rootUrl}/session/secure`, body, options);
+      expect(secureRes.data.message).toMatch(/hello/i);
     });
 
     afterEach(() => {
@@ -186,12 +191,7 @@ describe('session', () => {
     });
 
     it('revokes token with valid username', async () => {
-      const options = { headers: { Authorization: `Bearer ${token}` } };
-      const secureRes = await axios.post(`${rootUrl}/session/secure`, body, options);
-      expect(secureRes.data.message).toMatch(/hello/i);
-
-      const { username } = body;
-      const revokedRes = await axios.post(`${rootUrl}/session/revoke`, { username });
+      const revokedRes = await axios.post(`${rootUrl}/session/revoke`, { token });
       expect(revokedRes.data.token).toBe(token);
 
       await axios.post(`${rootUrl}/session/secure`, body, options).catch(setError);
@@ -199,7 +199,11 @@ describe('session', () => {
       expect(err.response.data.message).toMatch(/unauthorized/i);
     });
 
-    it('responds with 404 if no token exists for username', () => {});
+    it('responds with 404 if no token exists for username', async () => {
+      await axios.post(`${rootUrl}/session/revoke`, { token: 'foo' }).catch(setError);
+      expect(err.response.status).toBe(404);
+      expect(err.response.data.message).toMatch(/token not found/i);
+    });
 
     it.todo('TODO: Experiment with postgres/sqlite');
   });
