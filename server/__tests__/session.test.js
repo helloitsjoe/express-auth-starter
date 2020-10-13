@@ -4,6 +4,7 @@
 const axios = require('axios');
 const makeAuthServer = require('../makeAuthServer');
 const { makeDb } = require('../middleware');
+const { makeTestDb } = require('../services');
 const { silenceLogsMatching } = require('../test-utils');
 
 console.log = silenceLogsMatching('Auth Server listening')(console.log);
@@ -20,7 +21,7 @@ const setError = e => {
 };
 
 beforeEach(async () => {
-  db = makeDb();
+  db = { users: makeTestDb(), tokens: makeTestDb() };
   // Passing port 0 to server assigns a random port
   server = await makeAuthServer(0, db);
   const { port } = server.address();
@@ -79,11 +80,14 @@ describe('session', () => {
     });
 
     it('does not store plaintext password', async () => {
-      const body = { username: 'foo', password: 'bar' };
+      const username = 'foo';
+      const body = { username, password: 'bar' };
       await axios.post(`${rootUrl}/session/signup`, body);
-      expect(typeof db.users.get(body.username).password).toBe('undefined');
-      expect(typeof db.users.get(body.username).hash).toBe('string');
-      expect(db.users.get(body.username).hash).not.toMatch(body.password);
+      const [user] = await db.users.find({ username });
+      console.log(`user:`, user);
+      expect(typeof user.password).toBe('undefined');
+      expect(typeof user.hash).toBe('string');
+      expect(user.hash).not.toMatch(body.password);
     });
   });
 
