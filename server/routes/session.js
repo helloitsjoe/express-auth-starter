@@ -72,14 +72,15 @@ router.post('/secure', (req, res) => {
 router.post('/revoke', (req, res) => {
   // TODO: admin auth
   const { tokens } = req.context.db;
+  const { token } = req.body;
+
   // eslint-disable-next-line no-restricted-syntax
-  for (const [token, { username }] of tokens) {
-    if (username === req.body.username) {
-      tokens.delete(token);
-      return res.json({ token });
-    }
+  if (!tokens.has(token)) {
+    return res.status(404).json({ message: 'Token not found!' });
   }
-  return res.status(404).json({ message: 'Token not found!' });
+
+  tokens.delete(token);
+  return res.json({ token });
 });
 
 module.exports = router;
