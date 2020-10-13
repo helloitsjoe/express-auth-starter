@@ -3,7 +3,7 @@
  */
 const axios = require('axios');
 const makeAuthServer = require('../makeAuthServer');
-const { makeDb } = require('../dbMiddleware');
+const { makeDb } = require('../middleware');
 const { silenceLogsMatching } = require('../test-utils');
 
 console.log = silenceLogsMatching('Auth Server listening')(console.log);

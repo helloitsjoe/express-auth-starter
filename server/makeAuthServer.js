@@ -6,7 +6,7 @@ const bodyParser = require('body-parser');
 const oauth = require('./routes/oauth');
 const session = require('./routes/session');
 const jwt = require('./routes/jwt');
-const { makeDbMiddleware } = require('./dbMiddleware');
+const { makeDbMiddleware, makeErrorMiddleware } = require('./middleware');
 
 const makeAuthServer = async (port = 3001, db) => {
   const app = express();
@@ -22,15 +22,17 @@ const makeAuthServer = async (port = 3001, db) => {
   app.use('/session', session);
   app.use('/oauth', oauth);
 
-  return new Promise((resolve, reject) => {
-    server.listen(port, () => {
-      console.log(`Auth Server listening on http://localhost:${server.address().port}`);
-      return resolve(server);
-    });
+  app.use(makeErrorMiddleware());
 
+  return new Promise((resolve, reject) => {
     server.on('error', e => {
       console.error(e);
       reject(e);
+    });
+
+    server.listen(port, () => {
+      console.log(`Auth Server listening on http://localhost:${server.address().port}`);
+      return resolve(server);
     });
   });
 };

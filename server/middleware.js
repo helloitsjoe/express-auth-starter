@@ -5,4 +5,9 @@ const makeDbMiddleware = db => (req, res, next) => {
   next();
 };
 
-module.exports = { makeDbMiddleware, makeDb };
+const makeErrorMiddleware = () => (err, req, res, next) => {
+  console.error(err);
+  next(err);
+};
+
+module.exports = { makeDbMiddleware, makeDb, makeErrorMiddleware };
