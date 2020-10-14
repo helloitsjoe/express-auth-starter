@@ -11,6 +11,10 @@ const wait = (ms = 500, shouldFail = false) =>
     }, ms)
   );
 
+export function signUp({ endpoint, username, password }) {
+  return wait().then(() => axios.post(getUrl(`${endpoint}/signup`, 3001), { username, password }));
+}
+
 export function login({ endpoint, username, password }) {
   return wait().then(() => axios.post(getUrl(`${endpoint}/login`, 3001), { username, password }));
 }

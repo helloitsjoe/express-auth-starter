@@ -125,7 +125,7 @@ describe('session', () => {
       const body = { username: 'foo', password: 'bar' };
       await axios.post(`${rootUrl}/session/login`, body).catch(setError);
       expect(err.response.status).toBe(401);
-      expect(err.response.data.message).toMatch(/username does not exist/i);
+      expect(err.response.data.message).toMatch(/username foo does not exist/i);
     });
   });
 
