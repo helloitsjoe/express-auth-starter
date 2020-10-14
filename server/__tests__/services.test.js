@@ -1,9 +1,9 @@
-const { makeTestDb } = require('../services');
+const { makeCollection } = require('../services');
 
 let db;
 
 beforeEach(() => {
-  db = makeTestDb();
+  db = makeCollection();
 });
 
 afterEach(() => {
@@ -20,9 +20,11 @@ it('inserts and finds', async () => {
 });
 
 it('updates', async () => {
-  await db.insertOne({ foo: 'bar' });
-  const updated = await db.updateOne({ foo: 'bar' }, { foo: 'baz' });
-  expect(updated).toEqual({ foo: 'baz' });
+  await db.insertOne({ id: 1, foo: 'bar' });
+  const updated = await db.updateOne({ id: 1 }, { foo: 'baz' });
+  expect(updated).toEqual({ id: 1, foo: 'baz' });
+  const [found] = await db.find({ id: 1 });
+  expect(found.foo).toBe('baz');
 });
 
 it('deletes', async () => {

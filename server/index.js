@@ -1,7 +1,7 @@
 const { MongoClient } = require('mongodb');
 const makeServer = require('./makeServer');
 const makeAuthServer = require('./makeAuthServer');
-// const { makeDb } = require('./services');
+const { makeCollection } = require('./services');
 
 MongoClient.connect('mongodb://0.0.0.0:27017/auth?useUnifiedTopology=true')
   .then(client => {
@@ -10,7 +10,7 @@ MongoClient.connect('mongodb://0.0.0.0:27017/auth?useUnifiedTopology=true')
     const db = client.db('auth');
 
     makeServer();
-    makeAuthServer(3001, db);
+    makeAuthServer(3001, { users: makeCollection(db.collection('users')) });
   })
   .catch(err => {
     console.error('Error connecting to DB:', err);

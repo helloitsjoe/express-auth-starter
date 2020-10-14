@@ -3,7 +3,7 @@
  */
 const axios = require('axios');
 const makeAuthServer = require('../makeAuthServer');
-const { makeDb } = require('../middleware');
+const { makeCollection } = require('../services');
 const { silenceLogsMatching } = require('../test-utils');
 
 console.log = silenceLogsMatching('Auth Server listening')(console.log);
@@ -22,7 +22,7 @@ const setError = e => {
 };
 
 beforeEach(async () => {
-  db = makeDb();
+  db = { users: makeCollection() };
   // Passing port 0 to server assigns a random port
   server = await makeAuthServer(0, db);
   const { port } = server.address();
@@ -49,10 +49,13 @@ describe('jwt', () => {
     });
 
     it('does not store password as plaintext', async () => {
-      const body = { username: 'first', password: 'bar' };
+      const username = 'first';
+      const body = { username, password: 'bar' };
       await axios.post(`${rootUrl}/jwt/signup`, body);
-      expect(typeof db.users.get(body.username)).toBe('string');
-      expect(db.users.get(body.username)).not.toBe(body.password);
+      const [user] = await db.users.find({ username });
+      expect(typeof user.password).toBe('undefined');
+      expect(typeof user.hash).toBe('string');
+      expect(user.hash).not.toBe(body.password);
     });
   });
 

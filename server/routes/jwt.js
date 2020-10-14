@@ -14,12 +14,16 @@ const handleSignUp = async ({ username, password }, users) => {
   if (!username || !password) {
     return makeResponse({ message: 'Username and password are both required.', status: 401 });
   }
-  if (users.has(username)) {
+
+  const [user] = await users.find({ username });
+
+  if (user) {
     return makeResponse({ message: `Username ${username} is unavailable!`, status: 400 });
   }
 
   const hash = await bcrypt.hash(password, SALT_ROUNDS).catch(console.error);
-  users.set(username, hash);
+  // users.set(username, hash);
+  await users.insertOne({ username, hash });
 
   const token = jwt.sign({ username }, 'mysecret', { expiresIn: EXPIRATION });
   return makeResponse({ token });
@@ -31,11 +35,14 @@ const handleLogin = async ({ username, password }, users) => {
   if (!username || !password) {
     return makeResponse({ message: 'Username and password are both required.', status: 401 });
   }
-  if (!users.has(username)) {
+
+  const [user] = await users.find({ username });
+
+  if (!user) {
     return makeResponse({ message: `User ${username} does not exist`, status: 400 });
   }
 
-  const valid = await bcrypt.compare(password, users.get(username));
+  const valid = await bcrypt.compare(password, user.hash);
   if (!valid) {
     return makeResponse({ message: `Wrong password for user ${username}`, status: 401 });
   }
