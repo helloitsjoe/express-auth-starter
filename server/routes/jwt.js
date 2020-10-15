@@ -15,7 +15,7 @@ const handleSignUp = async ({ username, password }, users) => {
     return makeResponse({ message: 'Username and password are both required.', status: 401 });
   }
 
-  const [user] = await users.find({ username });
+  const user = await users.findOne({ username });
 
   if (user) {
     return makeResponse({ message: `Username ${username} is unavailable!`, status: 400 });
@@ -36,7 +36,7 @@ const handleLogin = async ({ username, password }, users) => {
     return makeResponse({ message: 'Username and password are both required.', status: 401 });
   }
 
-  const [user] = await users.find({ username });
+  const user = await users.findOne({ username });
 
   if (!user) {
     return makeResponse({ message: `User ${username} does not exist`, status: 400 });

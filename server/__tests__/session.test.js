@@ -82,7 +82,7 @@ describe('session', () => {
       const username = 'foo';
       const body = { username, password: 'bar' };
       await axios.post(`${rootUrl}/session/signup`, body);
-      const [user] = await db.users.find({ username });
+      const user = await db.users.findOne({ username });
       expect(typeof user.password).toBe('undefined');
       expect(typeof user.hash).toBe('string');
       expect(user.hash).not.toMatch(body.password);

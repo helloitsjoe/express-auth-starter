@@ -6,10 +6,10 @@ const makeTestDb = () => {
     return Promise.resolve(data);
   };
 
-  const find = query => {
+  const findOne = query => {
     // TODO: Match more than the first key
     const key = Object.keys(query)[0];
-    const found = mockDb.filter(entry => entry[key] === query[key]);
+    const found = mockDb.find(entry => entry[key] === query[key]);
     return Promise.resolve(found);
   };
 
@@ -32,16 +32,16 @@ const makeTestDb = () => {
     return Promise.resolve(true);
   };
 
-  return { insertOne, find, updateOne, deleteOne };
+  return { insertOne, findOne, updateOne, deleteOne };
 };
 
 const makeMongoDb = collection => {
   const insertOne = data => collection.insertOne(data);
-  const find = query => collection.find(query).toArray();
+  const findOne = query => collection.findOne(query);
   const updateOne = (query, update) => collection.updateOne(query, { $set: update });
   const deleteOne = query => collection.deleteOne(query);
 
-  return { insertOne, find, updateOne, deleteOne };
+  return { insertOne, findOne, updateOne, deleteOne };
 };
 
 const makeCollection = collection => {

@@ -14,7 +14,7 @@ const handleSignUp = async ({ username, password }, db) => {
     return makeResponse({ message: 'Username and password are both required.', status: 401 });
   }
 
-  const [user] = await users.find({ username });
+  const user = await users.findOne({ username });
 
   if (user) {
     return makeResponse({ message: 'Username already exists', status: 401 });
@@ -34,7 +34,7 @@ const handleLogin = async ({ username, password }, db) => {
     return makeResponse({ message: 'Username and password are both required.', status: 401 });
   }
 
-  const [user] = await users.find({ username });
+  const user = await users.findOne({ username });
 
   if (!user) {
     return makeResponse({ message: `Username ${username} does not exist`, status: 401 });
@@ -66,7 +66,7 @@ router.post('/secure', async (req, res) => {
   const { users } = req.db;
   // TODO: Middleware for removing bearer and checking username/password
   const token = authorization && authorization.split('Bearer ')[1];
-  const [user] = await users.find({ token });
+  const user = await users.findOne({ token });
 
   if (!user) {
     return res.status(403).json({ message: 'Unauthorized!' });
@@ -81,7 +81,7 @@ router.post('/revoke', async (req, res) => {
   // TODO: admin auth
   const { users } = req.db;
   const { token } = req.body;
-  const [user] = await users.find({ token });
+  const user = await users.findOne({ token });
 
   if (!user) {
     return res.status(404).json({ message: 'Token not found!' });
