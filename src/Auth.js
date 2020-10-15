@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 
 import React from 'react';
-import { login, sendSecure } from './services';
+import { login, sendSecure, signUp } from './services';
 import { withAuthProvider, useAuth } from './AuthContext';
 
 const useForm = initialValues => {
@@ -21,10 +21,15 @@ const queryReducer = (s, a) => {
       return { ...s, status: 'LOADING', errorMessage: '' };
     case 'fetch_success':
       console.log(`success:`, a.payload);
-      return { ...s, status: 'SUCCESS', data: a.payload };
+      return { ...s, status: 'SUCCESS', data: a.payload, fetchFn: login, buttonText: 'Log In' };
     case 'fetch_error':
       console.log(`error:`, a.payload);
       return { ...s, status: 'ERROR', errorMessage: a.payload };
+    case 'toggle_form': {
+      const fetchFn = s.fetchFn === login ? signUp : login;
+      const buttonText = s.buttonText === 'Log In' ? 'Sign Up' : 'Log In';
+      return { ...s, fetchFn, buttonText };
+    }
     default:
       return s;
   }
@@ -35,15 +40,17 @@ const useFetch = () => {
     status: 'IDLE',
     data: null,
     errorMessage: '',
+    fetchFn: signUp,
+    buttonText: 'Sign Up',
   });
 
   return { ...state, dispatch };
 };
 
-const Login = ({ id, endpoint }) => {
+const Form = ({ id, endpoint }) => {
   const { handleChange, values } = useForm({ username: '', password: '' });
-  const { status, data, errorMessage, dispatch } = useFetch();
-  const { logIn } = useAuth();
+  const { status, data, errorMessage, dispatch, fetchFn, buttonText } = useFetch();
+  const { authorize } = useAuth();
 
   const isLoading = status === 'LOADING';
 
@@ -52,11 +59,11 @@ const Login = ({ id, endpoint }) => {
     const { username, password } = values;
 
     dispatch({ type: 'fetch' });
-    login({ endpoint, username, password })
+    fetchFn({ endpoint, username, password })
       .then(res => {
         // TODO: Set logged in in localHost
         console.log(res.data);
-        logIn(res.data.token);
+        authorize(res.data.token);
         dispatch({ type: 'fetch_success', payload: res.data });
       })
       .catch(err => {
@@ -82,9 +89,18 @@ const Login = ({ id, endpoint }) => {
           value={values.password}
           onChange={handleChange}
         />
-        <button data-testid={`${id}-login-submit`} type="submit" disabled={isLoading}>
-          Log In
-        </button>
+        <div>
+          <button data-testid={`${id}-login-submit`} type="submit" disabled={isLoading}>
+            {buttonText}
+          </button>
+          <button
+            type="button"
+            style={{ border: 'none', background: 'none', textDecoration: 'underline' }}
+            onClick={() => dispatch({ type: 'toggle_form' })}
+          >
+            Switch to {buttonText === 'Log In' ? 'Sign Up' : 'Log In'}
+          </button>
+        </div>
         {status === 'ERROR' && <h1 className="error">Error: {errorMessage}</h1>}
         {isLoading && <h1>Loading...</h1>}
         {data && <pre>{JSON.stringify(data, null, 2)}</pre>}
@@ -140,7 +156,7 @@ const Auth = ({ endpoint }) => {
 
   return (
     <>
-      <Login endpoint={endpoint} id={id} />
+      <Form endpoint={endpoint} id={id} />
       <SendMessage endpoint={endpoint} id={id} />
     </>
   );

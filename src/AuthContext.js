@@ -7,12 +7,12 @@ export const AuthProvider = ({ children, initialValue }) => {
   const [token, setToken] = useState();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  const logIn = newToken => {
+  const authorize = newToken => {
     setToken(newToken);
     setIsLoggedIn(true);
   };
 
-  const defaults = { token, logIn, isLoggedIn };
+  const defaults = { token, authorize, isLoggedIn };
 
   console.log('isLoggedIn', isLoggedIn);
   return <AuthContext.Provider value={initialValue || defaults}>{children}</AuthContext.Provider>;
@@ -28,6 +28,6 @@ export const withAuthProvider = Component => props => {
 };
 
 export const useAuth = () => {
-  const { isLoggedIn, token, logIn } = useContext(AuthContext);
-  return { isLoggedIn, token, logIn };
+  const { isLoggedIn, token, authorize } = useContext(AuthContext);
+  return { isLoggedIn, token, authorize };
 };

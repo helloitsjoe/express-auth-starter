@@ -3,7 +3,7 @@
  */
 const axios = require('axios');
 const makeAuthServer = require('../makeAuthServer');
-const { makeDb } = require('../middleware');
+const { makeCollection } = require('../services');
 const { silenceLogsMatching } = require('../test-utils');
 
 console.log = silenceLogsMatching('Auth Server listening')(console.log);
@@ -20,7 +20,7 @@ const setError = e => {
 };
 
 beforeEach(async () => {
-  db = makeDb();
+  db = { users: makeCollection() };
   // Passing port 0 to server assigns a random port
   server = await makeAuthServer(0, db);
   const { port } = server.address();
@@ -79,11 +79,13 @@ describe('session', () => {
     });
 
     it('does not store plaintext password', async () => {
-      const body = { username: 'foo', password: 'bar' };
+      const username = 'foo';
+      const body = { username, password: 'bar' };
       await axios.post(`${rootUrl}/session/signup`, body);
-      expect(typeof db.users.get(body.username).password).toBe('undefined');
-      expect(typeof db.users.get(body.username).hash).toBe('string');
-      expect(db.users.get(body.username).hash).not.toMatch(body.password);
+      const [user] = await db.users.find({ username });
+      expect(typeof user.password).toBe('undefined');
+      expect(typeof user.hash).toBe('string');
+      expect(user.hash).not.toMatch(body.password);
     });
   });
 
@@ -123,49 +125,62 @@ describe('session', () => {
       const body = { username: 'foo', password: 'bar' };
       await axios.post(`${rootUrl}/session/login`, body).catch(setError);
       expect(err.response.status).toBe(401);
-      expect(err.response.data.message).toMatch(/username does not exist/i);
+      expect(err.response.data.message).toMatch(/username foo does not exist/i);
     });
   });
 
   describe('/secure', () => {
-    let body;
-    let token;
+    it('authorized after signup', async () => {
+      const body = { username: 'foo', password: 'bar' };
+      const signup = await axios.post(`${rootUrl}/session/signup`, body);
+      const { token } = signup.data;
 
-    beforeEach(async () => {
-      body = { username: 'foo', password: 'bar' };
-      const res = await axios.post(`${rootUrl}/session/signup`, body);
-      // const res = await axios.post(`${rootUrl}/session/login`, body);
-      token = res.data.token;
-      expect(res.data.token).toMatch(/\w+/);
-    });
-
-    it('returns response if valid token', async () => {
+      expect(token).toMatch(/\w+/);
       const options = { headers: { Authorization: `Bearer ${token}` } };
       const res = await axios.post(`${rootUrl}/session/secure`, body, options);
       expect(res.data.message).toMatch('Hello from session auth, foo!');
     });
 
-    it('returns error if no token', async () => {
-      await axios.post(`${rootUrl}/session/secure`, body).catch(setError);
-      expect(err.response.data.message).toMatch(/Unauthorized!/i);
-    });
+    describe('after logging in', () => {
+      let body;
+      let token;
 
-    it('returns error if invalid token', async () => {
-      const options = { headers: { Authorization: `Bearer not-token` } };
-      await axios.post(`${rootUrl}/session/secure`, body, options).catch(setError);
-      expect(err.response.data.message).toMatch(/Unauthorized!/i);
-    });
+      beforeEach(async () => {
+        body = { username: 'foo', password: 'bar' };
+        await axios.post(`${rootUrl}/session/signup`, body);
+        const res = await axios.post(`${rootUrl}/session/login`, body);
+        token = res.data.token;
+        expect(res.data.token).toMatch(/\w+/);
+      });
 
-    // it('returns error if expired token', () => {
-    //   console.log(`date.now:`, Date.now());
-    //   jest.advanceTimersByTime(60 * 60 * 1000 + 1000);
-    //   console.log(`date.now:`, Date.now());
-    //   expect.assertions(2);
-    //   const options = { headers: { Authorization: `Bearer ${token}` } };
-    //   return axios.post(`${rootUrl}/session/secure`, body, options).catch(err => {
-    //     expect(err.response.data.message).toMatch(/Unauthorized!/i);
-    //   });
-    // });
+      it('returns response if valid token', async () => {
+        const options = { headers: { Authorization: `Bearer ${token}` } };
+        const res = await axios.post(`${rootUrl}/session/secure`, body, options);
+        expect(res.data.message).toMatch('Hello from session auth, foo!');
+      });
+
+      it('returns error if no token', async () => {
+        await axios.post(`${rootUrl}/session/secure`, body).catch(setError);
+        expect(err.response.data.message).toMatch(/Unauthorized!/i);
+      });
+
+      it('returns error if invalid token', async () => {
+        const options = { headers: { Authorization: `Bearer not-token` } };
+        await axios.post(`${rootUrl}/session/secure`, body, options).catch(setError);
+        expect(err.response.data.message).toMatch(/Unauthorized!/i);
+      });
+
+      // it('returns error if expired token', () => {
+      //   console.log(`date.now:`, Date.now());
+      //   jest.advanceTimersByTime(60 * 60 * 1000 + 1000);
+      //   console.log(`date.now:`, Date.now());
+      //   expect.assertions(2);
+      //   const options = { headers: { Authorization: `Bearer ${token}` } };
+      //   return axios.post(`${rootUrl}/session/secure`, body, options).catch(err => {
+      //     expect(err.response.data.message).toMatch(/Unauthorized!/i);
+      //   });
+      // });
+    });
   });
 
   describe('/revoke', () => {
@@ -176,7 +191,6 @@ describe('session', () => {
     beforeEach(async () => {
       body = { username: 'foo', password: 'bar' };
       const res = await axios.post(`${rootUrl}/session/signup`, body);
-      // const res = await axios.post(`${rootUrl}/session/login`, body);
       token = res.data.token;
       expect(res.data.token).toMatch(/\w+/);
 
