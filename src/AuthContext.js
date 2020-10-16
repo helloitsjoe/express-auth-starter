@@ -5,17 +5,19 @@ const AuthContext = React.createContext({});
 
 export const AuthProvider = ({ children, initialValue }) => {
   const [token, setToken] = useState();
+  const [username, setUsername] = useState();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  const authorize = newToken => {
+  const authorize = ({ username: newUsername, token: newToken }) => {
     setToken(newToken);
+    setUsername(newUsername);
     setIsLoggedIn(true);
   };
 
-  const defaults = { token, authorize, isLoggedIn };
+  const value = { token, authorize, isLoggedIn, username };
 
   console.log('isLoggedIn', isLoggedIn);
-  return <AuthContext.Provider value={initialValue || defaults}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={initialValue || value}>{children}</AuthContext.Provider>;
 };
 
 export const withAuthProvider = Component => props => {
@@ -28,6 +30,6 @@ export const withAuthProvider = Component => props => {
 };
 
 export const useAuth = () => {
-  const { isLoggedIn, token, authorize } = useContext(AuthContext);
-  return { isLoggedIn, token, authorize };
+  const { isLoggedIn, username, token, authorize } = useContext(AuthContext);
+  return { isLoggedIn, username, token, authorize };
 };

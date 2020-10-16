@@ -17,7 +17,6 @@ const makeAuthServer = async (port = 3001, db) => {
   app.use(bodyParser.json());
   app.use(makeDbMiddleware(db));
 
-  // TODO: Consolidate session and jwt?
   app.use('/jwt', jwt);
   app.use('/session', session);
   app.use('/oauth', oauth);
