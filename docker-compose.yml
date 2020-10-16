@@ -19,7 +19,8 @@ services:
       - '3000:3000'
       - '3001:3001'
     command: node server/index.js
-
+    environment:
+      MONGO_HOST: mongo
   # dev:
   #   image: node:12
   #   ports:
@@ -42,6 +43,5 @@ services:
   #   # working_dir: /e2e
   #   # volumes:
   #   #   - .:/e2e
-
-volumes:
-  node_modules:
+  # volumes:
+  #   node_modules:

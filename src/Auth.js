@@ -63,7 +63,7 @@ const Form = ({ id, endpoint }) => {
       .then(res => {
         // TODO: Set logged in in localHost
         console.log(res.data);
-        authorize(res.data.token);
+        authorize({ username, token: res.data.token });
         dispatch({ type: 'fetch_success', payload: res.data });
       })
       .catch(err => {
@@ -151,11 +151,14 @@ const SendMessage = ({ id, endpoint }) => {
 };
 
 // TODO: Change endpoint to id
-const Auth = ({ endpoint }) => {
+const Auth = ({ endpoint, title }) => {
   const id = endpoint.slice(1);
+  const { isLoggedIn, username } = useAuth();
 
   return (
     <>
+      <h3 style={{ display: 'inline' }}>{title}</h3>
+      {isLoggedIn && <span style={{ color: 'darkseagreen' }}> Logged in as {username}</span>}
       <Form endpoint={endpoint} id={id} />
       <SendMessage endpoint={endpoint} id={id} />
     </>

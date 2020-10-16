@@ -1,7 +1,8 @@
+/* eslint-disable react/prop-types */
 import React from 'react';
 import { oauth, updateSecureData } from './services';
 
-const OAuth = () => {
+const OAuth = ({ title }) => {
   const [secureData, setSecureData] = React.useState();
   const [errorMessage, setErrorMessage] = React.useState('');
   const [message, setMessage] = React.useState('');
@@ -34,6 +35,7 @@ const OAuth = () => {
 
   return (
     <form onSubmit={handleSendSecure}>
+      <h3>{title}</h3>
       <div className="column">
         <button type="button" onClick={handleOauth}>
           Authorize with OAuth
