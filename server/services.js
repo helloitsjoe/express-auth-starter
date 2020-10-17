@@ -9,7 +9,7 @@ const makeTestDb = () => {
   const findOne = query => {
     // TODO: Match more than the first key
     const key = Object.keys(query)[0];
-    const found = mockDb.find(entry => entry[key] === query[key]);
+    const found = mockDb.find(entry => entry[key] === query[key]) || null;
     return Promise.resolve(found);
   };
 
@@ -20,16 +20,16 @@ const makeTestDb = () => {
       if (entry[key] === query[key]) {
         // This expects all records to be objects. TODO: update to handle arrays
         mockDb[i] = { ...entry, ...update };
-        return Promise.resolve(mockDb[i]);
+        return Promise.resolve({ modifiedCount: 1 });
       }
     }
-    return Promise.resolve();
+    return Promise.resolve({ modifiedCount: 0 });
   };
 
   const deleteOne = query => {
     const key = Object.keys(query)[0];
     mockDb = mockDb.filter(entry => entry[key] !== query[key]);
-    return Promise.resolve(true);
+    return Promise.resolve({ deletedCount: 1 });
   };
 
   return { insertOne, findOne, updateOne, deleteOne };

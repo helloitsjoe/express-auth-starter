@@ -5,7 +5,7 @@ const { makeCollection } = require('./services');
 
 const MONGO_HOST = process.env.MONGO_HOST || 'localhost';
 
-MongoClient.connect(`mongodb://${MONGO_HOST}:27017/auth?useUnifiedTopology=true`)
+MongoClient.connect(`mongodb://${MONGO_HOST}:27017/auth`, { useUnifiedTopology: true })
   .then(client => {
     console.log('Connected to DB!');
 
