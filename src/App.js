@@ -6,14 +6,11 @@ import OAuth from './OAuth';
 export default function App() {
   return (
     <>
-      <h3>JWT</h3>
-      <Auth endpoint="/jwt" />
+      <Auth endpoint="/jwt" title="JWT" />
       <hr />
-      <h3>Session Auth</h3>
-      <Auth endpoint="/session" />
+      <Auth endpoint="/session" title="Session Auth" />
       <hr />
-      <h3>OAuth</h3>
-      <OAuth />
+      <OAuth title="OAuth" />
       {/* <hr />
       <Passport /> */}
       <hr />

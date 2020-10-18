@@ -26,6 +26,7 @@
     "@babel/plugin-proposal-class-properties": "^7.10.1",
     "@babel/preset-env": "^7.10.2",
     "@babel/preset-react": "^7.10.1",
+    "@testing-library/react": "^11.1.0",
     "babel-eslint": "^10.0.3",
     "babel-loader": "^8.0.6",
     "babel-react-simple": "^1.0.2",
@@ -44,7 +45,9 @@
   },
   "scripts": {
     "lint": "eslint '**/*.js' --ignore-pattern public/",
-    "test": "jest --runInBand",
+    "test:local": "jest --runInBand --testPathIgnorePatterns=services.test.js",
+    "test:mongo": "jest --runInBand",
+    "test": "docker-compose run --rm test",
     "start": "nodemon ./server",
     "build": "webpack",
     "watch": "webpack --watch",

@@ -1,37 +1,75 @@
+const { MongoClient } = require('mongodb');
 const { makeCollection } = require('../services');
 
 let db;
+let connection;
 
-beforeEach(() => {
-  db = makeCollection();
-});
-
-afterEach(() => {
-  db = null;
-});
-
-it('inserts and finds', async () => {
+// Tests have been extracted into functions, real and mock DBs run the same
+// tests. This is to ensure mock DB doesn't fall out of sync with real DB
+const testInsertAndFind = async () => {
   const none = await db.findOne({ foo: 'bar' });
-  expect(none).toEqual(undefined);
+  expect(none).toEqual(null);
 
-  await db.insertOne({ foo: 'bar', baz: 'qux' });
+  await db.insertOne({ _id: 'some-id', foo: 'bar', baz: 'qux' });
   const found = await db.findOne({ foo: 'bar' });
-  expect(found).toEqual({ foo: 'bar', baz: 'qux' });
-});
+  expect(found).toEqual({ _id: 'some-id', foo: 'bar', baz: 'qux' });
+};
 
-it('updates', async () => {
-  await db.insertOne({ id: 1, foo: 'bar' });
-  const updated = await db.updateOne({ id: 1 }, { foo: 'baz' });
-  expect(updated).toEqual({ id: 1, foo: 'baz' });
-  const found = await db.findOne({ id: 1 });
+const testUpdate = async () => {
+  await db.insertOne({ _id: '1', foo: 'bar' });
+  const updated = await db.updateOne({ _id: '1' }, { foo: 'baz' });
+  expect(updated.modifiedCount).toBe(1);
+  const found = await db.findOne({ _id: '1' });
   expect(found.foo).toBe('baz');
-});
+};
 
-it('deletes', async () => {
+const testUpdateNotFound = async () => {
+  const updated = await db.updateOne({ _id: '1' }, { foo: 'baz' });
+  expect(updated.modifiedCount).toBe(0);
+};
+
+const testDelete = async () => {
   await db.insertOne({ foo: 'bar', baz: 'qux' });
   const deleted = await db.deleteOne({ foo: 'bar' });
-  expect(deleted).toEqual(true);
+  expect(deleted.deletedCount).toEqual(1);
 
   const found = await db.findOne({ foo: 'bar' });
-  expect(found).toEqual(undefined);
+  expect(found).toEqual(null);
+};
+
+describe('Mock DB', () => {
+  beforeEach(() => {
+    db = makeCollection();
+  });
+
+  afterEach(() => {
+    db = null;
+  });
+
+  it('inserts and finds', testInsertAndFind);
+  it('updates', testUpdate);
+  it('update does not fail if no matching query', testUpdateNotFound);
+  it('deletes', testDelete);
+});
+
+describe('Real DB', () => {
+  beforeEach(async () => {
+    connection = await MongoClient.connect(process.env.MONGO_URL, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    const collection = await connection.db().collection('foo');
+    await collection.deleteMany({});
+    db = makeCollection(collection);
+  });
+
+  afterEach(async () => {
+    await connection.close();
+    db = null;
+  });
+
+  it('inserts and finds', testInsertAndFind);
+  it('updates', testUpdate);
+  it('update does not fail if no matching query', testUpdateNotFound);
+  it('deletes', testDelete);
 });

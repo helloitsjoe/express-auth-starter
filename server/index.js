@@ -3,13 +3,15 @@ const makeServer = require('./makeServer');
 const makeAuthServer = require('./makeAuthServer');
 const { makeCollection } = require('./services');
 
-MongoClient.connect('mongodb://0.0.0.0:27017/auth?useUnifiedTopology=true')
+const MONGO_HOST = process.env.MONGO_HOST || 'localhost';
+
+MongoClient.connect(`mongodb://${MONGO_HOST}:27017/auth`, { useUnifiedTopology: true })
   .then(client => {
     console.log('Connected to DB!');
 
     const db = client.db('auth');
 
-    makeServer();
+    makeServer(3000);
     makeAuthServer(3001, { users: makeCollection(db.collection('users')) });
   })
   .catch(err => {

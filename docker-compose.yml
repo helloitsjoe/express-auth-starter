@@ -23,7 +23,18 @@ services:
       - '3000:3000'
       - '3001:3001'
     command: node server/index.js
+    environment:
+      MONGO_HOST: mongo
 
+  test:
+    depends_on:
+      - mongo
+    build:
+      context: .
+    command: yarn test:mongo
+    environment:
+      MONGO_HOST: mongo
+      MONGO_URL: mongodb://mongo:27017/auth
   # dev:
   #   image: node:12
   #   ports:
@@ -46,6 +57,5 @@ services:
   #   # working_dir: /e2e
   #   # volumes:
   #   #   - .:/e2e
-
-volumes:
-  node_modules:
+  # volumes:
+  #   node_modules:

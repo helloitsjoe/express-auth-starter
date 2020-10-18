@@ -4,10 +4,6 @@
 const axios = require('axios');
 const makeAuthServer = require('../makeAuthServer');
 const { makeCollection } = require('../services');
-const { silenceLogsMatching } = require('../test-utils');
-
-console.log = silenceLogsMatching('Auth Server listening')(console.log);
-console.error = silenceLogsMatching('Error verifying token')(console.error);
 
 let db;
 let err;
