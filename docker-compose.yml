@@ -1,7 +1,7 @@
 version: '3'
 
 services:
-  mongo:
+  db:
     image: mongo:4.4-bionic
     restart: always
     ports:
@@ -12,7 +12,7 @@ services:
 
   auth:
     depends_on:
-      - mongo
+      - db
     build:
       context: .
     ports:
@@ -24,10 +24,10 @@ services:
 
   test:
     depends_on:
-      - mongo
+      - db
     build:
       context: .
-    command: yarn test:mongo
+    command: yarn test:db
     environment:
       MONGO_HOST: mongo
       MONGO_URL: mongodb://mongo:27017/auth
