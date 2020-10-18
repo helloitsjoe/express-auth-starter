@@ -64,7 +64,6 @@ describe('Real DB', () => {
   });
 
   afterEach(async () => {
-    // TODO: This seems to make Jest hang. Debug.
     await connection.close();
     db = null;
   });

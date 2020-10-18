@@ -21,6 +21,16 @@ services:
     command: node server/index.js
     environment:
       MONGO_HOST: mongo
+
+  test:
+    depends_on:
+      - mongo
+    build:
+      context: .
+    command: yarn test:mongo
+    environment:
+      MONGO_HOST: mongo
+      MONGO_URL: mongodb://mongo:27017/auth
   # dev:
   #   image: node:12
   #   ports:
