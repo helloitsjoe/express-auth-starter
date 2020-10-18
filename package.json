@@ -45,8 +45,8 @@
   },
   "scripts": {
     "lint": "eslint '**/*.js' --ignore-pattern public/",
-    "test:local": "jest --runInBand --testPathIgnorePatterns=services.test.js",
-    "test:mongo": "jest --runInBand",
+    "test:unit": "jest --runInBand --testPathIgnorePatterns=services.test.js",
+    "test:db": "jest --runInBand",
     "test": "docker-compose run --rm test",
     "start": "nodemon ./server",
     "build": "webpack",

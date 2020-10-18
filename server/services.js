@@ -1,4 +1,6 @@
-const makeTestDb = () => {
+const { MongoClient } = require('mongodb');
+
+const makeTestDbApi = () => {
   let mockDb = [];
 
   const insertOne = data => {
@@ -35,7 +37,7 @@ const makeTestDb = () => {
   return { insertOne, findOne, updateOne, deleteOne };
 };
 
-const makeMongoDb = collection => {
+const makeMongoApi = collection => {
   const insertOne = data => collection.insertOne(data);
   const findOne = query => collection.findOne(query);
   const updateOne = (query, update) => collection.updateOne(query, { $set: update });
@@ -45,7 +47,14 @@ const makeMongoDb = collection => {
 };
 
 const makeCollection = collection => {
-  return collection ? makeMongoDb(collection) : makeTestDb();
+  return collection ? makeMongoApi(collection) : makeTestDbApi();
 };
 
-module.exports = { makeCollection };
+const makeDbClient = async (url = 'mongodb://localhost:27017/auth') => {
+  return MongoClient.connect(url, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  });
+};
+
+module.exports = { makeCollection, makeDbClient };

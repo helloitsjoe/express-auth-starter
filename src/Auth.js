@@ -158,7 +158,11 @@ const Auth = ({ endpoint, title }) => {
   return (
     <>
       <h3 style={{ display: 'inline' }}>{title}</h3>
-      {isLoggedIn && <span style={{ color: 'darkseagreen' }}> Logged in as {username}</span>}
+      {isLoggedIn ? (
+        <span style={{ color: 'darkseagreen' }}> Logged in as {username}</span>
+      ) : (
+        <span style={{ color: 'gray' }}> Logged out</span>
+      )}
       <Form endpoint={endpoint} id={id} />
       <SendMessage endpoint={endpoint} id={id} />
     </>

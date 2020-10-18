@@ -1,5 +1,4 @@
-const { MongoClient } = require('mongodb');
-const { makeCollection } = require('../services');
+const { makeCollection, makeDbClient } = require('../services');
 
 let db;
 let connection;
@@ -54,10 +53,7 @@ describe('Mock DB', () => {
 
 describe('Real DB', () => {
   beforeEach(async () => {
-    connection = await MongoClient.connect(process.env.MONGO_URL, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    connection = await makeDbClient(process.env.DB_URL);
     const collection = await connection.db().collection('foo');
     await collection.deleteMany({});
     db = makeCollection(collection);
