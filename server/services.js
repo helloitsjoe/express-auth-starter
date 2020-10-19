@@ -1,4 +1,8 @@
-const { MongoClient } = require('mongodb');
+/* eslint-disable camelcase */
+// const { MongoClient } = require('mongodb');
+const { Client } = require('pg');
+
+const client = new Client();
 
 const makeTestDbApi = () => {
   let mockDb = [];
@@ -46,15 +50,66 @@ const makeMongoApi = collection => {
   return { insertOne, findOne, updateOne, deleteOne };
 };
 
+const makePgApi = tblName => {
+  // create table from tblName
+  const insertOne = async ({ username, hash, token, expires_in }) => {
+    const users = await client.query(
+      `INSERT INTO users(username, hash, token, expires_in) VALUES($1, $2, $3, $4) RETURNING *`,
+      [username, hash, token, expires_in]
+    );
+    return users.rows[0];
+  };
+
+  const findOne = async ({ username }) => {
+    const users = await client.query(`SELECT * FROM users WHERE username = $1`, [username]);
+    return users.rows[0];
+  };
+
+  const updateOne = async ({ username }, { token, expires_in }) => {
+    const users = await client.query(
+      'UPDATE users SET (token, expires_in) = ($1, $2) WHERE username = $3 RETURNING *',
+      [token, expires_in, username]
+    );
+    return users.rows[0];
+  };
+
+  // const deleteOne = query => client.query('DELETE FROM users WHERE u');
+
+  return { insertOne, findOne, updateOne };
+};
+
 const makeCollection = collection => {
   return collection ? makeMongoApi(collection) : makeTestDbApi();
 };
 
-const makeDbClient = async (url = 'mongodb://localhost:27017/auth') => {
-  return MongoClient.connect(url, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  });
+const makeTable = async name => {
+  const table = await client.query(
+    `
+    CREATE TABLE IF NOT EXISTS ${name} (
+      id SERIAL PRIMARY KEY,
+      username VARCHAR(64) NOT NULL,
+      hash VARCHAR(64) NOT NULL,
+      token VARCHAR(64),
+      expires_in INT
+    );
+  `
+  );
+  return table ? makePgApi(table) : makeTestDbApi();
 };
 
-module.exports = { makeCollection, makeDbClient };
+const makeDbClient = async () => {
+  // const dbUrl = process.env.DB_URL || 'mongodb://localhost:27017/auth';
+  // return MongoClient.connect(dbUrl, {
+  //   useNewUrlParser: true,
+  //   useUnifiedTopology: true,
+  // });
+
+  await client.connect();
+  const foo = await client.query("SELECT FROM pg_database WHERE datname = 'auth'");
+  if (!foo.rowCount) {
+    console.log('Creating DB...');
+    await client.query(`CREATE DATABASE auth;`);
+  }
+};
+
+module.exports = { makeCollection, makeDbClient, makeTable };

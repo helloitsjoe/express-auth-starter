@@ -87,6 +87,7 @@ router.post('/revoke', async (req, res) => {
     return res.status(404).json({ message: 'Token not found!' });
   }
 
+  // TODO: This will delete the user! Should only delete the token.
   users.deleteOne({ token });
   return res.json({ token });
 });
