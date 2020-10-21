@@ -1,4 +1,4 @@
-const { makeCollection, makeDbClient } = require('../services');
+const { makeCollection, makeMongoClient, makePgClient, makeTestDbApi } = require('../services');
 
 let db;
 let connection;
@@ -9,36 +9,37 @@ const testInsertAndFind = async () => {
   const none = await db.findOne({ foo: 'bar' });
   expect(none).toEqual(null);
 
-  await db.insertOne({ _id: 'some-id', foo: 'bar', baz: 'qux' });
-  const found = await db.findOne({ foo: 'bar' });
-  expect(found).toEqual({ _id: 'some-id', foo: 'bar', baz: 'qux' });
+  await db.insertOne({ username: 'bar', hash: 'qux' });
+  const found = await db.findOne({ username: 'bar' });
+  expect(found.username).toBe('bar');
+  expect(found.hash).toBe('qux');
 };
 
 const testUpdate = async () => {
-  await db.insertOne({ _id: '1', foo: 'bar' });
-  const updated = await db.updateOne({ _id: '1' }, { foo: 'baz' });
+  await db.insertOne({ username: 'foo', hash: 'bar' });
+  const updated = await db.updateOne({ username: 'foo' }, { token: '123' });
   expect(updated.modifiedCount).toBe(1);
-  const found = await db.findOne({ _id: '1' });
-  expect(found.foo).toBe('baz');
+  const found = await db.findOne({ username: 'foo' });
+  expect(found.hash).toBe('bar');
+  expect(found.token).toBe('123');
 };
 
 const testUpdateNotFound = async () => {
-  const updated = await db.updateOne({ _id: '1' }, { foo: 'baz' });
+  const updated = await db.updateOne({ username: 'foo' }, { foo: 'baz' });
   expect(updated.modifiedCount).toBe(0);
 };
 
 const testDelete = async () => {
-  await db.insertOne({ foo: 'bar', baz: 'qux' });
-  const deleted = await db.deleteOne({ foo: 'bar' });
-  expect(deleted.deletedCount).toEqual(1);
+  await db.insertOne({ username: 'foo', hash: 'bar' });
+  await db.deleteOne({ username: 'foo' });
 
-  const found = await db.findOne({ foo: 'bar' });
+  const found = await db.findOne({ username: 'foo' });
   expect(found).toEqual(null);
 };
 
 describe('Mock DB', () => {
   beforeEach(() => {
-    db = makeCollection();
+    db = makeTestDbApi();
   });
 
   afterEach(() => {
@@ -52,11 +53,16 @@ describe('Mock DB', () => {
 });
 
 describe('Real DB', () => {
+  // beforeEach(async () => {
+  //   connection = await makeMongoClient();
+  //   db = connection.makeCollection();
+  //   await db.clearAll();
+  // });
+
   beforeEach(async () => {
-    connection = await makeDbClient(process.env.DB_URL);
-    const collection = await connection.db().collection('foo');
-    await collection.deleteMany({});
-    db = makeCollection(collection);
+    connection = await makePgClient();
+    db = await connection.makeCollection();
+    await db.clearAll();
   });
 
   afterEach(async () => {

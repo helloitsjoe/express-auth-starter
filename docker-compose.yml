@@ -1,49 +1,60 @@
 version: '3'
 
 services:
-  db:
-    image: postgres:13
+  pg:
+    image: postgres:12
     restart: always
     ports:
       - '5432:5432'
     environment:
-      POSTGRES_PASSWORD: secret!
-      POSTGRES_USER: el-userino
+      POSTGRES_PASSWORD: secret
+      POSTGRES_USER: postgres
+      # POSTGRES_DATABASE: postgres
 
-  # mongo:
-  #   image: mongo:4.4-bionic
-  #   restart: always
-  #   ports:
-  #     - '27017:27017'
-  #   # environment:
-  #   #   MONGO_INITDB_ROOT_USERNAME: root
-  #   #   MONGO_INITDB_ROOT_PASSWORD: password
-
-  auth:
-    depends_on:
-      - db
-    build:
-      context: .
+  mongo:
+    image: mongo:4.4-bionic
+    restart: always
     ports:
-      - '3000:3000'
-      - '3001:3001'
-    command: node server/index.js
-    environment:
-      # DB_URL: mongodb://db:27017/auth
-      DB_URL: mongodb://db:27017/auth
+      - '27017:27017'
+    # environment:
+    #   MONGO_INITDB_ROOT_USERNAME: root
+    #   MONGO_INITDB_ROOT_PASSWORD: password
+
+  # auth:
+  #   depends_on:
+  #     - pg
+  #   build:
+  #     context: .
+  #   ports:
+  #     - '3000:3000'
+  #     - '3001:3001'
+  #   command: node server/index.js
+  #   environment:
+  #     DB_URL: mongodb://mongo:27017/auth
 
   test:
     depends_on:
-      - db
+      - pg
+      - mongo
     image: node:12
     command: /bin/bash -c "yarn && yarn test:db"
+    # command: /bin/bash
+    # tty: true
+    # stdin_open: true
     working_dir: /app
     volumes:
       - .:/app
       - node_modules:/app/node_modules
+    ports:
+      - '3000:3000'
+      - '3001:3001'
     environment:
-      # DB_URL: mongodb://db:27017/auth
-      DB_URL: mongodb://db:27017/auth
+      MONGO_URL: mongodb://mongo:27017/auth
+      POSTGRES_URL: postgresql://postgres:secret@pg:5432/postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DATABASE: postgres
+      POSTGRES_PASSWORD: secret
+      POSTGRES_HOST: pg
   # dev:
   #   image: node:12
   #   ports:

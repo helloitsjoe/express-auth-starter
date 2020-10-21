@@ -1,8 +1,7 @@
 /* eslint-disable camelcase */
-// const { MongoClient } = require('mongodb');
+require('dotenv').config();
+const { MongoClient } = require('mongodb');
 const { Client } = require('pg');
-
-const client = new Client();
 
 const makeTestDbApi = () => {
   let mockDb = [];
@@ -46,11 +45,12 @@ const makeMongoApi = collection => {
   const findOne = query => collection.findOne(query);
   const updateOne = (query, update) => collection.updateOne(query, { $set: update });
   const deleteOne = query => collection.deleteOne(query);
+  const clearAll = () => collection.deleteMany({});
 
-  return { insertOne, findOne, updateOne, deleteOne };
+  return { insertOne, findOne, updateOne, deleteOne, clearAll };
 };
 
-const makePgApi = tblName => {
+const makePgApi = client => {
   // create table from tblName
   const insertOne = async ({ username, hash, token, expires_in }) => {
     const users = await client.query(
@@ -62,7 +62,7 @@ const makePgApi = tblName => {
 
   const findOne = async ({ username }) => {
     const users = await client.query(`SELECT * FROM users WHERE username = $1`, [username]);
-    return users.rows[0];
+    return users.rows[0] || null;
   };
 
   const updateOne = async ({ username }, { token, expires_in }) => {
@@ -70,22 +70,27 @@ const makePgApi = tblName => {
       'UPDATE users SET (token, expires_in) = ($1, $2) WHERE username = $3 RETURNING *',
       [token, expires_in, username]
     );
-    return users.rows[0];
+    // return users.rows[0];
+    return { modifiedCount: users.rows.length };
   };
 
-  // const deleteOne = query => client.query('DELETE FROM users WHERE u');
+  const deleteOne = async ({ username }) => {
+    await client.query('DELETE FROM users WHERE username = $1', [username]);
+  };
 
-  return { insertOne, findOne, updateOne };
+  const clearAll = async () => client.query('TRUNCATE users');
+
+  return { insertOne, findOne, updateOne, deleteOne, clearAll };
 };
 
-const makeCollection = collection => {
-  return collection ? makeMongoApi(collection) : makeTestDbApi();
+const makeCollection = connection => {
+  return connection ? makeMongoApi(connection.db().collection('users')) : makeTestDbApi();
 };
 
-const makeTable = async name => {
-  const table = await client.query(
+const makeTable = async client => {
+  await client.query(
     `
-    CREATE TABLE IF NOT EXISTS ${name} (
+    CREATE TABLE IF NOT EXISTS users (
       id SERIAL PRIMARY KEY,
       username VARCHAR(64) NOT NULL,
       hash VARCHAR(64) NOT NULL,
@@ -94,22 +99,55 @@ const makeTable = async name => {
     );
   `
   );
-  return table ? makePgApi(table) : makeTestDbApi();
+  return client ? makePgApi(client) : makeTestDbApi();
 };
 
-const makeDbClient = async () => {
-  // const dbUrl = process.env.DB_URL || 'mongodb://localhost:27017/auth';
-  // return MongoClient.connect(dbUrl, {
-  //   useNewUrlParser: true,
-  //   useUnifiedTopology: true,
-  // });
+const makeMongoClient = async () => {
+  const dbUrl = process.env.MONGO_URL || 'mongodb://localhost:27017/auth';
+  const connection = await MongoClient.connect(dbUrl, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  });
+  console.log('Connected to MongoDB!');
+  connection.makeCollection = () => makeCollection(connection);
+  return connection;
+};
 
+// const wait = () => new Promise(resolve => setTimeout(resolve, 1000));
+
+const makePgClient = async () => {
+  // let client;
+
+  // const retryConnect = async (retries = 5) => {
+  const url = process.env.POSTGRES_URL || `postgres://postgres:secret@localhost:5432/postgres`;
+  const client = new Client({ connectionString: url });
+
+  // try {
   await client.connect();
-  const foo = await client.query("SELECT FROM pg_database WHERE datname = 'auth'");
-  if (!foo.rowCount) {
+  //   } catch (err) {
+  //     console.error(err);
+  //     console.log(`${retries} Retrying...`);
+  //     if (retries) {
+  //       await client.end();
+  //       console.log('Client disconnected?');
+  //       await wait();
+  //       return retryConnect(retries - 1);
+  //     }
+  //     throw err;
+  //   }
+  // };
+
+  // await retryConnect();
+  console.log(`Connected to Postgres!`);
+
+  const dbCheck = await client.query("SELECT FROM pg_database WHERE datname = 'auth'");
+  if (!dbCheck.rowCount) {
     console.log('Creating DB...');
     await client.query(`CREATE DATABASE auth;`);
   }
+  client.close = client.end;
+  client.makeCollection = () => makeTable(client);
+  return client;
 };
 
-module.exports = { makeCollection, makeDbClient, makeTable };
+module.exports = { makeMongoClient, makePgClient, makeTestDbApi };
