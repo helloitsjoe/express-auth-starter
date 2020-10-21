@@ -1,29 +1,34 @@
 /* eslint-disable react/prop-types */
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 
 const AuthContext = React.createContext({});
 
-export const AuthProvider = ({ children, initialValue }) => {
-  const [token, setToken] = useState();
-  const [username, setUsername] = useState();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+export const AuthProvider = ({ children, initialValue, endpoint }) => {
+  const [state, setState] = useState({ isLoggedIn: false });
 
-  const authorize = ({ username: newUsername, token: newToken }) => {
-    setToken(newToken);
-    setUsername(newUsername);
-    setIsLoggedIn(true);
+  useEffect(() => {
+    // TODO: Use cookies instead of localhost?
+    const { token, username, isLoggedIn } =
+      JSON.parse(localStorage.getItem(`auth${endpoint}`)) || {};
+
+    setState({ token, username, isLoggedIn });
+  }, [endpoint]);
+
+  const authorize = ({ username, token }) => {
+    localStorage.setItem(`auth${endpoint}`, JSON.stringify({ token, username, isLoggedIn: true }));
+    setState({ token, username, isLoggedIn: true });
   };
 
-  const value = { token, authorize, isLoggedIn, username };
+  const value = { ...state, authorize };
 
-  console.log('isLoggedIn', isLoggedIn);
+  console.log('isLoggedIn', state.isLoggedIn);
   return <AuthContext.Provider value={initialValue || value}>{children}</AuthContext.Provider>;
 };
 
 export const withAuthProvider = Component => props => {
   const { initialValue, ...rest } = props;
   return (
-    <AuthProvider initialValue={initialValue}>
+    <AuthProvider initialValue={initialValue} endpoint={props.endpoint}>
       <Component {...rest} />
     </AuthProvider>
   );
