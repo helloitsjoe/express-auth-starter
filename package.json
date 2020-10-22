@@ -40,12 +40,13 @@
     "eslint-plugin-react-hooks": "^2.3.0",
     "jest": "^25.1.0",
     "jest-simple-config": "^0.2.4",
+    "nock": "^13.0.4",
     "nodemon": "^2.0.2",
     "webpack-simple": "^1.5.2"
   },
   "scripts": {
     "lint": "eslint '**/*.js' --ignore-pattern public/",
-    "test:unit": "jest --runInBand --testPathIgnorePatterns=services.test.js",
+    "test:unit": "jest --runInBand --testPathIgnorePatterns=server/__tests__/services.test.js",
     "test:db": "jest --runInBand",
     "test": "docker-compose run --rm test",
     "start": "nodemon ./server",
