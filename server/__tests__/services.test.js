@@ -3,6 +3,11 @@ const { makeCollection, makeMongoClient, makePgClient, makeTestDbApi } = require
 let db;
 let connection;
 
+afterEach(async () => {
+  await connection.close();
+  db = null;
+});
+
 // Tests have been extracted into functions, real and mock DBs run the same
 // tests. This is to ensure mock DB doesn't fall out of sync with real DB
 const testInsertAndFind = async () => {
@@ -39,11 +44,8 @@ const testDelete = async () => {
 
 describe('Mock DB', () => {
   beforeEach(() => {
+    connection = { close() {} };
     db = makeTestDbApi();
-  });
-
-  afterEach(() => {
-    db = null;
   });
 
   it('inserts and finds', testInsertAndFind);
@@ -52,22 +54,24 @@ describe('Mock DB', () => {
   it('deletes', testDelete);
 });
 
-describe('Real DB', () => {
-  // beforeEach(async () => {
-  //   connection = await makeMongoClient();
-  //   db = connection.makeCollection();
-  //   await db.clearAll();
-  // });
-
+describe('Postgres DB', () => {
   beforeEach(async () => {
     connection = await makePgClient();
     db = await connection.makeCollection();
     await db.clearAll();
   });
 
-  afterEach(async () => {
-    await connection.close();
-    db = null;
+  it('inserts and finds', testInsertAndFind);
+  it('updates', testUpdate);
+  it('update does not fail if no matching query', testUpdateNotFound);
+  it('deletes', testDelete);
+});
+
+describe('Mongo DB', () => {
+  beforeEach(async () => {
+    connection = await makeMongoClient();
+    db = await connection.makeCollection();
+    await db.clearAll();
   });
 
   it('inserts and finds', testInsertAndFind);

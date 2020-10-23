@@ -1,17 +1,14 @@
-require('dotenv').config();
 const makeServer = require('./makeServer');
 const makeAuthServer = require('./makeAuthServer');
-const { makeCollection, makeTable, makePgClient, makeMongoClient } = require('./services');
+const { makePgClient, makeMongoClient } = require('./services');
 
 makePgClient()
   // makeMongoClient()
   .then(connection => {
-    // console.log('Connected to DB');
-    // console.log(`connection:`, connection);
-    makeServer(3000);
     return connection.makeCollection();
   })
   .then(users => {
+    makeServer(3000);
     makeAuthServer(3001, { users });
   })
   .catch(err => {

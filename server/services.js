@@ -51,12 +51,11 @@ const makeMongoApi = collection => {
 };
 
 const makePgApi = client => {
-  // create table from tblName
   const insertOne = async ({ username, hash, token, expires_in }) => {
-    const users = await client.query(
-      `INSERT INTO users(username, hash, token, expires_in) VALUES($1, $2, $3, $4) RETURNING *`,
-      [username, hash, token, expires_in]
-    );
+    const query =
+      'INSERT INTO users(username, hash, token, expires_in) VALUES($1, $2, $3, $4) RETURNING *';
+    const values = [username, hash, token, expires_in];
+    const users = await client.query(query, values);
     return users.rows[0];
   };
 
@@ -66,11 +65,10 @@ const makePgApi = client => {
   };
 
   const updateOne = async ({ username }, { token, expires_in }) => {
-    const users = await client.query(
-      'UPDATE users SET (token, expires_in) = ($1, $2) WHERE username = $3 RETURNING *',
-      [token, expires_in, username]
-    );
-    // return users.rows[0];
+    const updateQuery =
+      'UPDATE users SET (token, expires_in) = ($1, $2) WHERE username = $3 RETURNING *';
+    const values = [token, expires_in, username];
+    const users = await client.query(updateQuery, values);
     return { modifiedCount: users.rows.length };
   };
 
@@ -83,9 +81,7 @@ const makePgApi = client => {
   return { insertOne, findOne, updateOne, deleteOne, clearAll };
 };
 
-const makeCollection = connection => {
-  return connection ? makeMongoApi(connection.db().collection('users')) : makeTestDbApi();
-};
+const makeCollection = connection => makeMongoApi(connection.db().collection('users'));
 
 const makeTable = async client => {
   await client.query(
@@ -99,11 +95,11 @@ const makeTable = async client => {
     );
   `
   );
-  return client ? makePgApi(client) : makeTestDbApi();
+  return makePgApi(client);
 };
 
 const makeMongoClient = async () => {
-  const dbUrl = process.env.MONGO_URL || 'mongodb://localhost:27017/auth';
+  const dbUrl = process.env.MONGO_URL;
   const connection = await MongoClient.connect(dbUrl, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
@@ -113,31 +109,11 @@ const makeMongoClient = async () => {
   return connection;
 };
 
-// const wait = () => new Promise(resolve => setTimeout(resolve, 1000));
-
 const makePgClient = async () => {
-  // let client;
-
-  // const retryConnect = async (retries = 5) => {
-  const url = process.env.POSTGRES_URL || `postgres://postgres:secret@localhost:5432/postgres`;
+  const { PGUSER, PGPASSWORD, PGDATABASE, PGHOST } = process.env;
+  const url = `postgres://${PGUSER}:${PGPASSWORD}@${PGHOST}:5432/${PGDATABASE}`;
   const client = new Client({ connectionString: url });
-
-  // try {
   await client.connect();
-  //   } catch (err) {
-  //     console.error(err);
-  //     console.log(`${retries} Retrying...`);
-  //     if (retries) {
-  //       await client.end();
-  //       console.log('Client disconnected?');
-  //       await wait();
-  //       return retryConnect(retries - 1);
-  //     }
-  //     throw err;
-  //   }
-  // };
-
-  // await retryConnect();
   console.log(`Connected to Postgres!`);
 
   const dbCheck = await client.query("SELECT FROM pg_database WHERE datname = 'auth'");
@@ -145,6 +121,7 @@ const makePgClient = async () => {
     console.log('Creating DB...');
     await client.query(`CREATE DATABASE auth;`);
   }
+
   client.close = client.end;
   client.makeCollection = () => makeTable(client);
   return client;
