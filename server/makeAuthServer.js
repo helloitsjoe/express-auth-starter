@@ -6,7 +6,7 @@ const bodyParser = require('body-parser');
 const oauth = require('./routes/oauth');
 const session = require('./routes/session');
 const jwt = require('./routes/jwt');
-const { makeDbMiddleware, makeErrorMiddleware } = require('./middleware');
+const { makeDbMiddleware, errorMiddleware } = require('./middleware');
 
 const makeAuthServer = async (port = 3001, db) => {
   const app = express();
@@ -21,7 +21,7 @@ const makeAuthServer = async (port = 3001, db) => {
   app.use('/session', session);
   app.use('/oauth', oauth);
 
-  app.use(makeErrorMiddleware());
+  app.use(errorMiddleware);
 
   return new Promise((resolve, reject) => {
     server.on('error', e => {

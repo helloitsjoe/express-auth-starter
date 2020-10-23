@@ -1,12 +1,15 @@
 const makeServer = require('./makeServer');
 const makeAuthServer = require('./makeAuthServer');
-const { makeCollection, makeDbClient } = require('./services');
+const { makePgClient, makeMongoClient } = require('./services');
 
-makeDbClient(process.env.DB_URL)
+makePgClient()
+  // makeMongoClient()
   .then(connection => {
-    console.log('Connected to Mongo');
+    return connection.makeCollection();
+  })
+  .then(users => {
     makeServer(3000);
-    makeAuthServer(3001, { users: makeCollection(connection.db('auth').collection('users')) });
+    makeAuthServer(3001, { users });
   })
   .catch(err => {
     console.error('Error connecting to DB:', err);

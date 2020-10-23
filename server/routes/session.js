@@ -8,6 +8,7 @@ const router = express.Router();
 const TOKEN_EXPIRATION = process.env.TOKEN_EXPIRATION || ONE_HOUR_IN_SECONDS;
 const SALT_ROUNDS = 1;
 
+// TODO: This isn't really session auth - use session middleware instead
 const handleSignUp = async ({ username, password }, db) => {
   const { users } = db;
   if (!username || !password) {
@@ -62,9 +63,9 @@ router.post('/login', async (req, res) => {
 });
 
 router.post('/secure', async (req, res) => {
+  // TODO: Make this middleware for all secure routes
   const { authorization } = req.headers;
   const { users } = req.db;
-  // TODO: Middleware for removing bearer and checking username/password
   const token = authorization && authorization.split('Bearer ')[1];
   const user = await users.findOne({ token });
 
@@ -87,6 +88,7 @@ router.post('/revoke', async (req, res) => {
     return res.status(404).json({ message: 'Token not found!' });
   }
 
+  // TODO: This will delete the user! Make this updateOne and remove token
   users.deleteOne({ token });
   return res.json({ token });
 });

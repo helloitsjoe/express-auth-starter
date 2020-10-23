@@ -3,7 +3,7 @@
  */
 const axios = require('axios');
 const makeAuthServer = require('../makeAuthServer');
-const { makeCollection } = require('../services');
+const { makeTestDbApi } = require('../services');
 
 let db;
 let err;
@@ -16,7 +16,7 @@ const setError = e => {
 };
 
 beforeEach(async () => {
-  db = { users: makeCollection() };
+  db = { users: makeTestDbApi() };
   // Passing port 0 to server assigns a random port
   server = await makeAuthServer(0, db);
   const { port } = server.address();

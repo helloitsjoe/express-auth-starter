@@ -22,7 +22,6 @@ const handleSignUp = async ({ username, password }, users) => {
   }
 
   const hash = await bcrypt.hash(password, SALT_ROUNDS).catch(console.error);
-  // users.set(username, hash);
   await users.insertOne({ username, hash });
 
   const token = jwt.sign({ username }, 'mysecret', { expiresIn: EXPIRATION });
@@ -30,8 +29,6 @@ const handleSignUp = async ({ username, password }, users) => {
 };
 
 const handleLogin = async ({ username, password }, users) => {
-  // const message = `Username: ${username} | Password: ${password}`;
-
   if (!username || !password) {
     return makeResponse({ message: 'Username and password are both required.', status: 401 });
   }
@@ -58,11 +55,11 @@ router.post('/signup', async (req, res) => {
 
 router.post('/login', async (req, res) => {
   const { status, ...rest } = await handleLogin(req.body, req.db.users);
-  // console.log(status, rest);
   res.status(status).json(rest);
 });
 
 router.post('/secure', (req, res) => {
+  // TODO: make this middleware for all secure routes
   const { authorization } = req.headers;
   if (!authorization) {
     return res.status(403).json({ message: 'Authorization header is required' });
