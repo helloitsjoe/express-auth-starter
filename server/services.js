@@ -127,4 +127,21 @@ const makePgClient = async () => {
   return client;
 };
 
-module.exports = { makeMongoClient, makePgClient, makeTestDbApi };
+const validateDbApi = apiToTest => {
+  const apiToOverride = ['updateOne', 'findOne', 'insertOne', 'deleteOne'];
+  apiToOverride.forEach(methodName => {
+    if (typeof apiToTest[methodName] !== 'function') {
+      throw new Error(`Function ${methodName} must be defined`);
+    }
+  });
+  return apiToTest;
+};
+
+module.exports = {
+  makeMongoClient,
+  makePgClient,
+  makeMongoApi,
+  makePgApi,
+  makeTestDbApi,
+  validateDbApi,
+};
