@@ -37,7 +37,9 @@ const makeTestDbApi = () => {
     return Promise.resolve({ deletedCount: 1 });
   };
 
-  return { insertOne, findOne, updateOne, deleteOne };
+  const closeConnection = () => {};
+
+  return { insertOne, findOne, updateOne, deleteOne, closeConnection };
 };
 
 const makeMongoApi = collection => {
@@ -100,13 +102,20 @@ const makeTable = async client => {
 
 const makeMongoClient = async () => {
   const dbUrl = process.env.MONGO_URL;
-  const connection = await MongoClient.connect(dbUrl, {
+  const client = await MongoClient.connect(dbUrl, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   });
   console.log('Connected to MongoDB!');
-  connection.makeCollection = () => makeCollection(connection);
-  return connection;
+  // client.makeCollection = () => makeCollection(client);
+  const collection = await makeCollection(client);
+  client.closeConnection = client.close;
+
+  for (const [key, value] of Object.entries(collection)) {
+    client[key] = value;
+  }
+
+  return client;
 };
 
 const makePgClient = async () => {
@@ -122,8 +131,13 @@ const makePgClient = async () => {
     await client.query(`CREATE DATABASE auth;`);
   }
 
-  client.close = client.end;
-  client.makeCollection = () => makeTable(client);
+  const collection = await makeTable(client);
+
+  for (const [key, value] of Object.entries(collection)) {
+    client[key] = value;
+  }
+
+  client.closeConnection = client.end;
   return client;
 };
 

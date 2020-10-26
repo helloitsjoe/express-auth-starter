@@ -1,10 +1,9 @@
-const { makeCollection, makeMongoClient, makePgClient, makeTestDbApi } = require('../services');
+const { makeMongoClient, makePgClient, makeTestDbApi } = require('../services');
 
 let db;
-let connection;
 
 afterEach(async () => {
-  await connection.close();
+  await db.closeConnection();
   db = null;
 });
 
@@ -44,7 +43,6 @@ const testDelete = async () => {
 
 describe('Mock DB', () => {
   beforeEach(() => {
-    connection = { close() {} };
     db = makeTestDbApi();
   });
 
@@ -56,8 +54,7 @@ describe('Mock DB', () => {
 
 describe('Postgres DB', () => {
   beforeEach(async () => {
-    connection = await makePgClient();
-    db = await connection.makeCollection();
+    db = await makePgClient();
     await db.clearAll();
   });
 
@@ -69,8 +66,7 @@ describe('Postgres DB', () => {
 
 describe('Mongo DB', () => {
   beforeEach(async () => {
-    connection = await makeMongoClient();
-    db = await connection.makeCollection();
+    db = await makeMongoClient();
     await db.clearAll();
   });
 
