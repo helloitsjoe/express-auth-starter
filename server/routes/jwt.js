@@ -25,7 +25,7 @@ const handleSignUp = async ({ username, password }, users) => {
   const hash = await bcrypt.hash(password, SALT_ROUNDS).catch(console.error);
   await users.insertOne({ username, hash });
 
-  const token = jwt.sign({ username }, 'mysecret', { expiresIn: EXPIRATION });
+  const token = jwt.sign({ username }, process.env.JWT_SECRET, { expiresIn: EXPIRATION });
   return makeResponse({ token });
 };
 
@@ -45,7 +45,7 @@ const handleLogin = async ({ username, password }, users) => {
     return makeResponse({ message: `Wrong password for user ${username}`, status: 401 });
   }
 
-  const token = jwt.sign({ username }, 'mysecret', { expiresIn: EXPIRATION });
+  const token = jwt.sign({ username }, process.env.JWT_SECRET, { expiresIn: EXPIRATION });
   return makeResponse({ token });
 };
 

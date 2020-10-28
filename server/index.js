@@ -1,6 +1,6 @@
 const makeServer = require('./makeServer');
 const makeAuthServer = require('./makeAuthServer');
-const { makePgClient, makeMongoClient } = require('./services');
+const { makePgClient, makeMongoClient } = require('./db');
 
 makePgClient()
   // makeMongoClient()

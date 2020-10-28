@@ -3,6 +3,7 @@ const path = require('path');
 const http = require('http');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+// const expressSession = require('express-session');
 const oauth = require('./routes/oauth');
 const session = require('./routes/session');
 const jwt = require('./routes/jwt');
@@ -15,6 +16,7 @@ const makeAuthServer = async (port = 3001, db) => {
   app.use(express.static(path.join(__dirname, '../public/oauth')));
   app.use(cors());
   app.use(bodyParser.json());
+  // app.use(expressSession({ secret: process.env.SESSION_SECRET }));
   app.use(makeDbMiddleware(db));
 
   app.use('/jwt', jwt);

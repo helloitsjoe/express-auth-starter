@@ -3,7 +3,7 @@
  */
 const axios = require('axios');
 const makeAuthServer = require('../makeAuthServer');
-const { makeTestDbApi } = require('../services');
+const { makeTestDbApi } = require('../db');
 
 let db;
 let err;

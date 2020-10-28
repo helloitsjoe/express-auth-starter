@@ -1,5 +1,5 @@
 /* eslint-disable indent */
-const { validateDbApi, makeTestDbApi, makeMongoApi, makePgApi } = require('../services');
+const { validateDbApi, makeTestDbApi, makeMongoApi, makePgApi } = require('../db');
 
 describe('validateDbApi', () => {
   it.each`
@@ -8,12 +8,16 @@ describe('validateDbApi', () => {
     ${'insertOne'}
     ${'updateOne'}
     ${'deleteOne'}
+    ${'clearAll'}
+    ${'closeConnection'}
   `('throws if $methodName is not defined', ({ methodName }) => {
     const api = {
       findOne: () => {},
       insertOne: () => {},
       updateOne: () => {},
       deleteOne: () => {},
+      clearAll: () => {},
+      closeConnection: () => {},
     };
     api[methodName] = null;
     expect(() => validateDbApi(api)).toThrow(`Function ${methodName} must be defined`);

@@ -13,9 +13,9 @@ const jwtMiddleware = (req, res, next) => {
     next(error);
   }
   try {
-    const token = authorization.split('Bearer ')[1];
     // JWT has build in expiration check
-    const decoded = jwt.verify(token, 'mysecret');
+    const token = authorization.split('Bearer ')[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = { username: decoded.username };
     next();
   } catch (err) {
