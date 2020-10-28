@@ -1,6 +1,7 @@
 /* eslint-disable camelcase */
 const bcrypt = require('bcrypt');
 const express = require('express');
+const { sessionMiddleware } = require('../middleware');
 const { generateRandom, makeResponse, ONE_HOUR_IN_SECONDS } = require('./utils');
 
 const router = express.Router();
@@ -62,20 +63,9 @@ router.post('/login', async (req, res) => {
   res.status(status).json(rest);
 });
 
-router.post('/secure', async (req, res) => {
-  // TODO: Make this middleware for all secure routes
-  const { authorization } = req.headers;
-  const { users } = req.db;
-  const token = authorization && authorization.split('Bearer ')[1];
-  const user = await users.findOne({ token });
-
-  if (!user) {
-    return res.status(403).json({ message: 'Unauthorized!' });
-  }
+router.post('/secure', sessionMiddleware, async (req, res) => {
   // TODO: check expiration
-  const { username } = user;
-
-  return res.json({ message: `Hello from session auth, ${username}!` });
+  return res.json({ message: `Hello from session auth, ${req.user.username}!` });
 });
 
 router.post('/revoke', async (req, res) => {

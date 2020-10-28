@@ -2,6 +2,7 @@ const express = require('express');
 // const expressJWT = require('express-jwt');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
+const { jwtMiddleware } = require('../middleware');
 const { ONE_HOUR_IN_SECONDS, makeResponse } = require('./utils');
 
 const router = express.Router();
@@ -58,21 +59,8 @@ router.post('/login', async (req, res) => {
   res.status(status).json(rest);
 });
 
-router.post('/secure', (req, res) => {
-  // TODO: make this middleware for all secure routes
-  const { authorization } = req.headers;
-  if (!authorization) {
-    return res.status(403).json({ message: 'Authorization header is required' });
-  }
-  try {
-    const token = authorization.split('Bearer ')[1];
-    // JWT has build in expiration check
-    const decoded = jwt.verify(token, 'mysecret');
-    return res.json({ message: `Hi from JWT, ${decoded.username}!` });
-  } catch (err) {
-    console.error('Error verifying token:', err);
-    return res.status(403).json({ message: `Unauthorized! ${err.message}` });
-  }
+router.post('/secure', jwtMiddleware, (req, res) => {
+  return res.json({ message: `Hi from JWT, ${req.user.username}!` });
 });
 
 module.exports = router;
