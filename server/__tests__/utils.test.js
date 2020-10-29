@@ -1,13 +1,14 @@
-import { getSessionCookie } from '../utils';
+import { getCookie } from '../utils';
 
 describe('utils', () => {
-  it('getSessionCookie gets session cookie', () => {
-    const headers = { 'set-cookie': ['foo=bar; connect.sid=s%3Asome-session-cookie.foo; baz=qux'] };
-    expect(getSessionCookie(headers)).toBe('some-session-cookie');
+  it('getCookie gets session cookie', () => {
+    const cookie = 'foo=bar; connect.sid=s%3Asome-session-cookie.foo; baz=qux';
+    const res = { headers: { 'set-cookie': [cookie] } };
+    expect(getCookie(res)).toBe(cookie);
   });
 
-  it('getSessionCookie does not get session cookie if does not exist', () => {
-    const headers = { 'set-cookie': ['foo=bar; baz=qux'] };
-    expect(getSessionCookie(headers)).toBe(undefined);
+  it('getCookie does not get session cookie if does not exist', () => {
+    const res = { headers: {} };
+    expect(getCookie(res)).toBe(undefined);
   });
 });

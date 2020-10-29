@@ -32,10 +32,8 @@ const makeError = (status = 403, message = 'Unauthorized!') => {
 };
 
 const sessionMiddleware = async (req, res, next) => {
-  const { sid } = req.headers;
-  if (!sid) return next(makeError());
-
-  req.sessionStore.get(sid, async (err, session) => {
+  // req.session.id is set from cookie in expressSession
+  req.sessionStore.get(req.session.id, async (err, session) => {
     if (err) return next(err);
     if (!session) return next(makeError());
 

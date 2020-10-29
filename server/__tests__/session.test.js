@@ -4,7 +4,7 @@
 const axios = require('axios');
 const makeAuthServer = require('../makeAuthServer');
 const { makeTestDbApi } = require('../db');
-const { getSessionCookie } = require('../utils');
+const { getCookie } = require('../utils');
 
 let db;
 let err;
@@ -50,7 +50,7 @@ describe('session', () => {
     it('returns session ID for valid signup', async () => {
       const body = { username: 'foo', password: 'bar' };
       const res = await axios.post(`${rootUrl}/session/signup`, body);
-      const sessionIdCookie = getSessionCookie(res.headers);
+      const sessionIdCookie = getCookie(res);
       expect(typeof sessionIdCookie).toBe('string');
     });
 
@@ -92,8 +92,7 @@ describe('session', () => {
       const body = { username: 'foo', password: 'bar' };
       await axios.post(`${rootUrl}/session/signup`, body);
       const res = await axios.post(`${rootUrl}/session/login`, body);
-      const cookieId = getSessionCookie(res.headers);
-      expect(typeof cookieId).toBe('string');
+      expect(getCookie(res)).toMatch(/connect.sid=/);
     });
 
     it('returns error if no username', async () => {
@@ -132,37 +131,38 @@ describe('session', () => {
     it('authorized after signup', async () => {
       const body = { username: 'foo', password: 'bar' };
       const signup = await axios.post(`${rootUrl}/session/signup`, body);
+      const cookie = getCookie(signup);
 
-      const options = { headers: { sid: getSessionCookie(signup.headers) } };
+      const options = { headers: { cookie } };
       const res = await axios.post(`${rootUrl}/session/secure`, body, options);
       expect(res.data.message).toMatch('Hello from session auth, foo!');
     });
 
     describe('after logging in', () => {
       let body;
-      let sid;
+      let cookie;
 
       beforeEach(async () => {
         body = { username: 'foo', password: 'bar' };
         await axios.post(`${rootUrl}/session/signup`, body);
         const res = await axios.post(`${rootUrl}/session/login`, body);
-        sid = getSessionCookie(res.headers);
+        cookie = getCookie(res);
         expect(res.data.token).toMatch(/\w+/);
       });
 
       it('returns response if valid session', async () => {
-        const options = { headers: { sid } };
+        const options = { headers: { cookie } };
         const res = await axios.post(`${rootUrl}/session/secure`, body, options);
         expect(res.data.message).toMatch('Hello from session auth, foo!');
       });
 
-      it('returns error if no token', async () => {
+      it('returns error if no cookie', async () => {
         await axios.post(`${rootUrl}/session/secure`, body).catch(setError);
         expect(err.response.data.message).toMatch(/Unauthorized!/i);
       });
 
-      it('returns error if invalid token', async () => {
-        const options = { headers: { sid: 'not-right' } };
+      it('returns error if invalid cookie', async () => {
+        const options = { headers: { cookie: 'connect.sid=not-right' } };
         await axios.post(`${rootUrl}/session/secure`, body, options).catch(setError);
         expect(err.response.data.message).toMatch(/Unauthorized!/i);
       });
@@ -180,39 +180,38 @@ describe('session', () => {
     });
   });
 
-  describe('/revoke', () => {
+  describe('/logout', () => {
     let body;
-    let sid;
+    let cookie;
     let options;
 
     beforeEach(async () => {
       body = { username: 'foo', password: 'bar' };
       const res = await axios.post(`${rootUrl}/session/signup`, body);
-      sid = getSessionCookie(res.headers);
-      expect(typeof sid).toMatch('string');
+      cookie = getCookie(res);
+      expect(cookie).toMatch(/connect.sid=/);
 
-      options = { headers: { sid } };
+      options = { headers: { cookie } };
       const secureRes = await axios.post(`${rootUrl}/session/secure`, body, options);
       expect(secureRes.data.message).toMatch(/hello/i);
     });
 
     afterEach(() => {
       body = null;
-      sid = null;
+      cookie = null;
     });
 
-    it('revokes token with valid username', async () => {
-      const revokedRes = await axios.post(`${rootUrl}/session/revoke`, {}, options);
-      expect(revokedRes.data.sid).toBe(sid);
-      // expect(getSessionCookie(revokedRes.headers)).toBe(undefined);
+    it('revokes token with valid cookie', async () => {
+      const revokedRes = await axios.post(`${rootUrl}/session/logout`, {}, options);
+      expect(revokedRes.data.message).toMatch(/logged out/);
 
       await axios.post(`${rootUrl}/session/secure`, body, options).catch(setError);
       expect(err.response.status).toBe(403);
       expect(err.response.data.message).toMatch(/unauthorized/i);
     });
 
-    it('responds with 403 if no sid provided', async () => {
-      await axios.post(`${rootUrl}/session/revoke`, {}, {}).catch(setError);
+    it('responds with 403 if no cookie provided', async () => {
+      await axios.post(`${rootUrl}/session/logout`, {}, {}).catch(setError);
       expect(err.response.status).toBe(403);
       expect(err.response.data.message).toMatch(/no session id provided/i);
     });
