@@ -4,6 +4,7 @@
 const axios = require('axios');
 const makeAuthServer = require('../makeAuthServer');
 const { makeTestDbApi } = require('../db');
+const { getSessionCookie } = require('../utils');
 
 let db;
 let err;
@@ -46,10 +47,11 @@ describe('oauth', () => {
 
 describe('session', () => {
   describe('/signup', () => {
-    it('returns token for valid signup', async () => {
+    it('returns session ID for valid signup', async () => {
       const body = { username: 'foo', password: 'bar' };
       const res = await axios.post(`${rootUrl}/session/signup`, body);
-      expect(typeof res.data.token).toBe('string');
+      const sessionIdCookie = getSessionCookie(res.headers);
+      expect(typeof sessionIdCookie).toBe('string');
     });
 
     it('returns error if no username', async () => {
@@ -86,11 +88,12 @@ describe('session', () => {
   });
 
   describe('/login', () => {
-    it('returns token for valid login', async () => {
+    it('returns session ID for valid login', async () => {
       const body = { username: 'foo', password: 'bar' };
       await axios.post(`${rootUrl}/session/signup`, body);
       const res = await axios.post(`${rootUrl}/session/login`, body);
-      expect(typeof res.data.token).toBe('string');
+      const cookieId = getSessionCookie(res.headers);
+      expect(typeof cookieId).toBe('string');
     });
 
     it('returns error if no username', async () => {
@@ -129,28 +132,26 @@ describe('session', () => {
     it('authorized after signup', async () => {
       const body = { username: 'foo', password: 'bar' };
       const signup = await axios.post(`${rootUrl}/session/signup`, body);
-      const { token } = signup.data;
 
-      expect(token).toMatch(/\w+/);
-      const options = { headers: { Authorization: `Bearer ${token}` } };
+      const options = { headers: { sid: getSessionCookie(signup.headers) } };
       const res = await axios.post(`${rootUrl}/session/secure`, body, options);
       expect(res.data.message).toMatch('Hello from session auth, foo!');
     });
 
     describe('after logging in', () => {
       let body;
-      let token;
+      let sid;
 
       beforeEach(async () => {
         body = { username: 'foo', password: 'bar' };
         await axios.post(`${rootUrl}/session/signup`, body);
         const res = await axios.post(`${rootUrl}/session/login`, body);
-        token = res.data.token;
+        sid = getSessionCookie(res.headers);
         expect(res.data.token).toMatch(/\w+/);
       });
 
-      it('returns response if valid token', async () => {
-        const options = { headers: { Authorization: `Bearer ${token}` } };
+      it('returns response if valid session', async () => {
+        const options = { headers: { sid } };
         const res = await axios.post(`${rootUrl}/session/secure`, body, options);
         expect(res.data.message).toMatch('Hello from session auth, foo!');
       });
@@ -161,7 +162,7 @@ describe('session', () => {
       });
 
       it('returns error if invalid token', async () => {
-        const options = { headers: { Authorization: `Bearer not-token` } };
+        const options = { headers: { sid: 'not-right' } };
         await axios.post(`${rootUrl}/session/secure`, body, options).catch(setError);
         expect(err.response.data.message).toMatch(/Unauthorized!/i);
       });
@@ -181,40 +182,39 @@ describe('session', () => {
 
   describe('/revoke', () => {
     let body;
-    let token;
+    let sid;
     let options;
 
     beforeEach(async () => {
       body = { username: 'foo', password: 'bar' };
       const res = await axios.post(`${rootUrl}/session/signup`, body);
-      token = res.data.token;
-      expect(res.data.token).toMatch(/\w+/);
+      sid = getSessionCookie(res.headers);
+      expect(typeof sid).toMatch('string');
 
-      options = { headers: { Authorization: `Bearer ${token}` } };
+      options = { headers: { sid } };
       const secureRes = await axios.post(`${rootUrl}/session/secure`, body, options);
       expect(secureRes.data.message).toMatch(/hello/i);
     });
 
     afterEach(() => {
       body = null;
-      token = null;
+      sid = null;
     });
 
     it('revokes token with valid username', async () => {
-      const revokedRes = await axios.post(`${rootUrl}/session/revoke`, { token });
-      expect(revokedRes.data.token).toBe(token);
+      const revokedRes = await axios.post(`${rootUrl}/session/revoke`, {}, options);
+      expect(revokedRes.data.sid).toBe(sid);
+      // expect(getSessionCookie(revokedRes.headers)).toBe(undefined);
 
       await axios.post(`${rootUrl}/session/secure`, body, options).catch(setError);
       expect(err.response.status).toBe(403);
       expect(err.response.data.message).toMatch(/unauthorized/i);
     });
 
-    it('responds with 404 if no token exists for username', async () => {
-      await axios.post(`${rootUrl}/session/revoke`, { token: 'foo' }).catch(setError);
-      expect(err.response.status).toBe(404);
-      expect(err.response.data.message).toMatch(/token not found/i);
+    it('responds with 403 if no sid provided', async () => {
+      await axios.post(`${rootUrl}/session/revoke`, {}, {}).catch(setError);
+      expect(err.response.status).toBe(403);
+      expect(err.response.data.message).toMatch(/no session id provided/i);
     });
-
-    it.todo('TODO: Experiment with postgres/sqlite');
   });
 });

@@ -1,7 +1,7 @@
 // This example is based on http://thecodebarbarian.com/oauth-with-node-js-and-express.html
 const express = require('express');
 const path = require('path');
-const { generateRandom, ONE_DAY_IN_SECONDS } = require('./utils');
+const { generateRandom, ONE_DAY_IN_SECONDS } = require('../utils');
 
 // Store codes and tokens in memory. In a real server this would use a DB
 const authCodes = new Set();

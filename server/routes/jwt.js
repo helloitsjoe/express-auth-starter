@@ -3,7 +3,7 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const { jwtMiddleware } = require('../middleware');
-const { ONE_HOUR_IN_SECONDS, makeResponse } = require('./utils');
+const { ONE_HOUR_IN_SECONDS, makeResponse } = require('../utils');
 
 const router = express.Router();
 
