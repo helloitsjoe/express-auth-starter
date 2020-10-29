@@ -48,7 +48,7 @@
   },
   "scripts": {
     "lint": "eslint '**/*.js' --ignore-pattern public/",
-    "test:unit": "jest --runInBand --testPathIgnorePatterns=server/__tests__/services.test.js",
+    "test:unit": "jest --runInBand --testPathIgnorePatterns=db.test.js",
     "test:db": "jest --runInBand",
     "test": "docker-compose run --rm test",
     "start": "nodemon ./server",

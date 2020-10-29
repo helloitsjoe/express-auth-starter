@@ -9,7 +9,7 @@ export default function App() {
     <>
       <Auth endpoint="/jwt" title="JWT" />
       <hr />
-      <Auth endpoint="/session" title="Session Auth" />
+      <Auth endpoint="/simpleToken" title="Simple Token Auth" />
       <hr />
       <OAuth title="OAuth" />
       {/* <hr />

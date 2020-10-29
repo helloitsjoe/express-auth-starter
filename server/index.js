@@ -4,9 +4,6 @@ const { makePgClient, makeMongoClient } = require('./db');
 
 makePgClient()
   // makeMongoClient()
-  .then(connection => {
-    return connection.makeCollection();
-  })
   .then(users => {
     makeServer(3000);
     makeAuthServer(3001, { users });

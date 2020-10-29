@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 const bcrypt = require('bcrypt');
 const express = require('express');
-const { sessionMiddleware } = require('../middleware');
+const { simpleTokenMiddleware } = require('../middleware');
 const { generateRandom, makeResponse, ONE_HOUR_IN_SECONDS } = require('./utils');
 
 const router = express.Router();
@@ -9,7 +9,6 @@ const router = express.Router();
 const TOKEN_EXPIRATION = process.env.TOKEN_EXPIRATION || ONE_HOUR_IN_SECONDS;
 const SALT_ROUNDS = 1;
 
-// TODO: This isn't really session auth - use session middleware instead
 const handleSignUp = async ({ username, password }, db) => {
   const { users } = db;
   if (!username || !password) {
@@ -63,9 +62,9 @@ router.post('/login', async (req, res) => {
   res.status(status).json(rest);
 });
 
-router.post('/secure', sessionMiddleware, async (req, res) => {
+router.post('/secure', simpleTokenMiddleware, async (req, res) => {
   // TODO: check expiration
-  return res.json({ message: `Hello from session auth, ${req.user.username}!` });
+  return res.json({ message: `Hello from simpleToken auth, ${req.user.username}!` });
 });
 
 router.post('/revoke', async (req, res) => {
