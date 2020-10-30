@@ -25,6 +25,21 @@ const jwtMiddleware = (req, res, next) => {
   }
 };
 
+const simpleTokenMiddleware = async (req, res, next) => {
+  const { authorization } = req.headers;
+  const { users } = req.db;
+  const token = authorization && authorization.split('Bearer ')[1];
+  const user = await users.findOne({ token });
+
+  if (!user) {
+    const error = new Error('Unauthorized!');
+    error.statusCode = 403;
+    next(error);
+  }
+  req.user = user;
+  next();
+};
+
 const makeError = (status = 403, message = 'Unauthorized!') => {
   const error = new Error(message);
   error.statusCode = status;
@@ -55,4 +70,10 @@ const errorMiddleware = (err, req, res, next) => {
   return res.status(statusCode).json({ message });
 };
 
-module.exports = { makeDbMiddleware, errorMiddleware, sessionMiddleware, jwtMiddleware };
+module.exports = {
+  makeDbMiddleware,
+  errorMiddleware,
+  sessionMiddleware,
+  jwtMiddleware,
+  simpleTokenMiddleware,
+};

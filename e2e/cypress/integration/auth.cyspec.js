@@ -29,6 +29,27 @@ describe('Auth', () => {
     });
   });
 
+  describe('Simple Token', () => {
+    it('Returns error before logging in', () => {
+      cy.get(testId('simpleToken-input')).type('test');
+      cy.get('.error').should('not.be.visible');
+
+      cy.get(testId('simpleToken-submit')).click();
+      cy.get('.error').should('be.visible');
+    });
+
+    it('Returns token when logging in', () => {
+      cy.get(testId('simpleToken-login-input')).type('test');
+      cy.get(testId('simpleToken-password-input')).type('123');
+
+      cy.get(testId('simpleToken-login-submit')).click();
+      cy.contains(/loading/i).should('be', true);
+
+      cy.contains(/token/i).should('be', true);
+      cy.contains(/loading/i).should('be', false);
+    });
+  });
+
   describe('Session', () => {
     it('Returns error before logging in', () => {
       cy.get(testId('session-input')).type('test');

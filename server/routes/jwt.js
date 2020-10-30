@@ -54,6 +54,13 @@ router.post('/signup', async (req, res) => {
   res.status(status).json(rest);
 });
 
+// TODO: /login GET endpoint
+// router.get('/login', jwtMiddleware, async (req, res) => {
+//   console.log(`req.user:`, req.user);
+//   // const { status, ...rest } = await handleLogin(req.body, req.db.users);
+//   res.json({ loggedIn: !!req.user });
+// });
+
 router.post('/login', async (req, res) => {
   const { status, ...rest } = await handleLogin(req.body, req.db.users);
   res.status(status).json(rest);
