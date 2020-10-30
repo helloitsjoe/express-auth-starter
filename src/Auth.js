@@ -61,7 +61,7 @@ const Form = ({ id, endpoint }) => {
     dispatch({ type: 'fetch' });
     fetchFn({ endpoint, username, password })
       .then(res => {
-        // TODO: Set logged in in localHost
+        // TODO: Use sid instead of token
         console.log(res.data);
         authorize({ username, token: res.data.token });
         dispatch({ type: 'fetch_success', payload: res.data });

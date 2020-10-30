@@ -3,7 +3,7 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const { jwtMiddleware } = require('../middleware');
-const { ONE_HOUR_IN_SECONDS, makeResponse } = require('./utils');
+const { ONE_HOUR_IN_SECONDS, makeResponse } = require('../utils');
 
 const router = express.Router();
 
@@ -53,6 +53,13 @@ router.post('/signup', async (req, res) => {
   const { status, ...rest } = await handleSignUp(req.body, req.db.users);
   res.status(status).json(rest);
 });
+
+// TODO: /login GET endpoint
+// router.get('/login', jwtMiddleware, async (req, res) => {
+//   console.log(`req.user:`, req.user);
+//   // const { status, ...rest } = await handleLogin(req.body, req.db.users);
+//   res.json({ loggedIn: !!req.user });
+// });
 
 router.post('/login', async (req, res) => {
   const { status, ...rest } = await handleLogin(req.body, req.db.users);

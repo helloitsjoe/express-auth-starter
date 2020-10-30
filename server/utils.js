@@ -20,8 +20,17 @@ const generateRandom = len => {
   return rand;
 };
 
+const getCookie = res => {
+  // const KEY = 'connect.sid=s%3A';
+  // const sessionId = cookies.split('; ').find(cookie => cookie.startsWith(KEY));
+  // return sessionId && sessionId.replace(KEY, '').split('.')[0];
+  const [cookies] = res.headers['set-cookie'] || [];
+  return cookies;
+};
+
 module.exports = {
   ONE_HOUR_IN_SECONDS,
+  getCookie,
   generateRandom,
   makeResponse,
 };

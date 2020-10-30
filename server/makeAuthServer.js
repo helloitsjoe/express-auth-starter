@@ -3,7 +3,9 @@ const path = require('path');
 const http = require('http');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const expressSession = require('express-session');
 const oauth = require('./routes/oauth');
+const session = require('./routes/session');
 const simpleToken = require('./routes/simpleToken');
 const jwt = require('./routes/jwt');
 const { makeDbMiddleware, errorMiddleware } = require('./middleware');
@@ -15,10 +17,18 @@ const makeAuthServer = async (port = 3001, db) => {
   app.use(express.static(path.join(__dirname, '../public/oauth')));
   app.use(cors());
   app.use(bodyParser.json());
+  app.use(
+    expressSession({
+      secret: process.env.EXPRESS_SESSION_SECRET,
+      resave: false,
+      saveUninitialized: true,
+    })
+  );
   app.use(makeDbMiddleware(db));
 
   app.use('/jwt', jwt);
-  app.use('/simpleToken', simpleToken);
+  app.use('/session', session);
+  app.use('/simple-token', simpleToken);
   app.use('/oauth', oauth);
 
   app.use(errorMiddleware);
