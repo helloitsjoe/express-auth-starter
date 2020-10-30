@@ -20,8 +20,8 @@ describe('Services', () => {
   });
 
   it('signUp hits signup endpoint with username/password', async () => {
-    nock(URL).post('/session/signup', { username, password }).reply(200, null, headers);
-    const res = await signUp({ endpoint: '/session', username, password });
+    nock(URL).post('/simple-token/signup', { username, password }).reply(200, null, headers);
+    const res = await signUp({ endpoint: '/simple-token', username, password });
     expect(res.status).toBe(200);
   });
 

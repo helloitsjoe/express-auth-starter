@@ -64,7 +64,7 @@ router.post('/login', async (req, res) => {
 
 router.post('/secure', simpleTokenMiddleware, async (req, res) => {
   // TODO: check expiration
-  return res.json({ message: `Hello from simpleToken auth, ${req.user.username}!` });
+  return res.json({ message: `Hello from simple-token auth, ${req.user.username}!` });
 });
 
 router.post('/revoke', async (req, res) => {

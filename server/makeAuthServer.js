@@ -28,7 +28,7 @@ const makeAuthServer = async (port = 3001, db) => {
 
   app.use('/jwt', jwt);
   app.use('/session', session);
-  app.use('/simpleToken', simpleToken);
+  app.use('/simple-token', simpleToken);
   app.use('/oauth', oauth);
 
   app.use(errorMiddleware);

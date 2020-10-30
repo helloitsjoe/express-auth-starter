@@ -9,7 +9,6 @@ const router = express.Router();
 const TOKEN_EXPIRATION = process.env.TOKEN_EXPIRATION || ONE_HOUR_IN_SECONDS;
 const SALT_ROUNDS = 1;
 
-// TODO: This isn't really session auth - use session middleware instead
 const handleSignUp = async ({ username, password }, db) => {
   const { users } = db;
   if (!username || !password) {
