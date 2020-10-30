@@ -23,7 +23,7 @@ const handleSignUp = async ({ username, password }, db) => {
 
   const hash = await bcrypt.hash(password, SALT_ROUNDS).catch(console.error);
   const token = generateRandom(50);
-
+  console.log(`token:`, token);
   await users.insertOne({ username, hash, token, expires_in: TOKEN_EXPIRATION });
 
   return makeResponse({ token });

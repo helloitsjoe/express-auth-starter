@@ -66,8 +66,12 @@ const makePgApi = client => {
     return users.rows[0];
   };
 
-  const findOne = async ({ username }) => {
-    const users = await client.query(`SELECT * FROM users WHERE username = $1`, [username]);
+  const findOne = async ({ username, token }) => {
+    // TODO: make this cleaner
+    const query = username ? 'username' : 'token';
+    const users = await client.query(`SELECT * FROM users WHERE ${query} = $1`, [
+      username || token,
+    ]);
     return users.rows[0] || null;
   };
 

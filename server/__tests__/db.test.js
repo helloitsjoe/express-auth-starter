@@ -13,10 +13,13 @@ const testInsertAndFind = async () => {
   const none = await db.findOne({ foo: 'bar' });
   expect(none).toEqual(null);
 
-  await db.insertOne({ username: 'bar', hash: 'qux' });
-  const found = await db.findOne({ username: 'bar' });
-  expect(found.username).toBe('bar');
-  expect(found.hash).toBe('qux');
+  await db.insertOne({ username: 'bar', token: 'abc', hash: 'qux' });
+  const foundByUsername = await db.findOne({ username: 'bar' });
+  const foundByToken = await db.findOne({ token: 'abc' });
+  expect(foundByUsername.username).toBe('bar');
+  expect(foundByUsername.hash).toBe('qux');
+  expect(foundByToken.username).toBe('bar');
+  expect(foundByToken.hash).toBe('qux');
 };
 
 const testUpdate = async () => {
