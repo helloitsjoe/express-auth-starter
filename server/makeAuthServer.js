@@ -6,7 +6,7 @@ const bodyParser = require('body-parser');
 const expressSession = require('express-session');
 const oauth = require('./routes/oauth');
 const session = require('./routes/session');
-const simpleToken = require('./routes/simpleToken');
+const simpleToken = require('./routes/session');
 const jwt = require('./routes/jwt');
 const { makeDbMiddleware, errorMiddleware } = require('./middleware');
 

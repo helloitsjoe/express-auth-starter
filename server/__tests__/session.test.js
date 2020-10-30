@@ -45,7 +45,7 @@ describe('oauth', () => {
   });
 });
 
-describe('session', () => {
+describe('simpleToken', () => {
   describe('/signup', () => {
     it('returns session ID for valid signup', async () => {
       const body = { username: 'foo', password: 'bar' };
@@ -56,22 +56,22 @@ describe('session', () => {
 
     it('returns error if no username', async () => {
       const body = { password: 'bar' };
-      await axios.post(`${rootUrl}/session/signup`, body).catch(setError);
+      await axios.post(`${rootUrl}/simpleToken/signup`, body).catch(setError);
       expect(err.response.status).toBe(401);
       expect(err.response.data.message).toMatch(/username/i);
     });
 
     it('returns error if no password', async () => {
       const body = { username: 'bar' };
-      await axios.post(`${rootUrl}/session/signup`, body).catch(setError);
+      await axios.post(`${rootUrl}/simpleToken/signup`, body).catch(setError);
       expect(err.response.status).toBe(401);
       expect(err.response.data.message).toMatch(/password/i);
     });
 
     it('returns error if user already exists', async () => {
       const body = { username: 'foo', password: 'bar' };
-      await axios.post(`${rootUrl}/session/signup`, body);
-      await axios.post(`${rootUrl}/session/signup`, body).catch(setError);
+      await axios.post(`${rootUrl}/simpleToken/signup`, body);
+      await axios.post(`${rootUrl}/simpleToken/signup`, body).catch(setError);
       expect(err.response.status).toBe(401);
       expect(err.response.data.message).toMatch(/username already exists/i);
     });
@@ -79,7 +79,7 @@ describe('session', () => {
     it('does not store plaintext password', async () => {
       const username = 'foo';
       const body = { username, password: 'bar' };
-      await axios.post(`${rootUrl}/session/signup`, body);
+      await axios.post(`${rootUrl}/simpleToken/signup`, body);
       const user = await db.users.findOne({ username });
       expect(typeof user.password).toBe('undefined');
       expect(typeof user.hash).toBe('string');
@@ -98,30 +98,30 @@ describe('session', () => {
     it('returns error if no username', async () => {
       expect.assertions(2);
       const body = { password: 'bar' };
-      await axios.post(`${rootUrl}/session/login`, body).catch(setError);
+      await axios.post(`${rootUrl}/simpleToken/login`, body).catch(setError);
       expect(err.response.status).toBe(401);
       expect(err.response.data.message).toMatch(/username and password are both required/i);
     });
 
     it('returns error if no password', async () => {
       const body = { username: 'foo' };
-      await axios.post(`${rootUrl}/session/login`, body).catch(setError);
+      await axios.post(`${rootUrl}/simpleToken/login`, body).catch(setError);
       expect(err.response.status).toBe(401);
       expect(err.response.data.message).toMatch(/username and password are both required/i);
     });
 
     it('returns error if password does not match', async () => {
       const body = { username: 'foo', password: 'bar' };
-      await axios.post(`${rootUrl}/session/signup`, body);
+      await axios.post(`${rootUrl}/simpleToken/signup`, body);
       const wrong = { username: 'foo', password: 'not-bar' };
-      await axios.post(`${rootUrl}/session/login`, wrong).catch(setError);
+      await axios.post(`${rootUrl}/simpleToken/login`, wrong).catch(setError);
       expect(err.response.status).toBe(401);
       expect(err.response.data.message).toMatch(/username and password do not match/i);
     });
 
     it('returns error if username does not exist', async () => {
       const body = { username: 'foo', password: 'bar' };
-      await axios.post(`${rootUrl}/session/login`, body).catch(setError);
+      await axios.post(`${rootUrl}/simpleToken/login`, body).catch(setError);
       expect(err.response.status).toBe(401);
       expect(err.response.data.message).toMatch(/username foo does not exist/i);
     });
@@ -173,7 +173,7 @@ describe('session', () => {
       //   console.log(`date.now:`, Date.now());
       //   expect.assertions(2);
       //   const options = { headers: { Authorization: `Bearer ${token}` } };
-      //   return axios.post(`${rootUrl}/session/secure`, body, options).catch(err => {
+      //   return axios.post(`${rootUrl}/simpleToken/secure`, body, options).catch(err => {
       //     expect(err.response.data.message).toMatch(/Unauthorized!/i);
       //   });
       // });
@@ -205,7 +205,7 @@ describe('session', () => {
       const revokedRes = await axios.post(`${rootUrl}/session/logout`, {}, options);
       expect(revokedRes.data.message).toMatch(/logged out/);
 
-      await axios.post(`${rootUrl}/session/secure`, body, options).catch(setError);
+      await axios.post(`${rootUrl}/simpleToken/secure`, body, options).catch(setError);
       expect(err.response.status).toBe(403);
       expect(err.response.data.message).toMatch(/unauthorized/i);
     });
