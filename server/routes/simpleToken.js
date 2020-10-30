@@ -23,7 +23,6 @@ const handleSignUp = async ({ username, password }, db) => {
 
   const hash = await bcrypt.hash(password, SALT_ROUNDS).catch(console.error);
   const token = generateRandom(50);
-  console.log(`token:`, token);
   await users.insertOne({ username, hash, token, expires_in: TOKEN_EXPIRATION });
 
   return makeResponse({ token });
@@ -67,18 +66,21 @@ router.post('/secure', simpleTokenMiddleware, async (req, res) => {
   return res.json({ message: `Hello from simple-token auth, ${req.user.username}!` });
 });
 
-router.post('/revoke', async (req, res) => {
+router.post('/logout', async (req, res) => {
   // TODO: admin auth
   const { users } = req.db;
   const { token } = req.body;
+  console.log(`token:`, token);
   const user = await users.findOne({ token });
-
+  console.log(`user:`, user);
   if (!user) {
     return res.status(404).json({ message: 'Token not found!' });
   }
 
-  // TODO: This will delete the user! Make this updateOne and remove token
-  users.deleteOne({ token });
+  const { username } = user;
+  await users.updateOne({ username }, { token: null, expires_in: null });
+  const userAfter = await users.findOne({ token });
+  console.log(`userAfter:`, userAfter);
   return res.json({ token });
 });
 

@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 
 import React from 'react';
-import { login, sendSecure, signUp } from './services';
+import { login, sendSecure, signUp, logOut } from './services';
 import { withAuthProvider, useAuth } from './AuthContext';
 
 const useForm = initialValues => {
@@ -12,7 +12,11 @@ const useForm = initialValues => {
     setValues(prev => ({ ...prev, [name]: value }));
   };
 
-  return { handleChange, values };
+  const handleResetForm = () => {
+    setValues(initialValues);
+  };
+
+  return { handleChange, handleResetForm, values };
 };
 
 const queryReducer = (s, a) => {
@@ -25,6 +29,10 @@ const queryReducer = (s, a) => {
     case 'fetch_error':
       console.log(`error:`, a.payload);
       return { ...s, status: 'ERROR', errorMessage: a.payload };
+    case 'logout':
+      return { ...s, status: 'LOADING', data: null, errorMessage: '' };
+    case 'logout_success':
+      return { ...s, status: 'IDLE', fetchFn: s.fetchFn };
     case 'toggle_form': {
       const fetchFn = s.fetchFn === login ? signUp : login;
       const buttonText = s.buttonText === 'Log In' ? 'Sign Up' : 'Log In';
@@ -48,9 +56,9 @@ const useFetch = () => {
 };
 
 const Form = ({ id, endpoint }) => {
-  const { handleChange, values } = useForm({ username: '', password: '' });
+  const { handleChange, handleResetForm, values } = useForm({ username: '', password: '' });
+  const { authLogIn, authLogOut, isLoggedIn, token } = useAuth();
   const { status, data, errorMessage, dispatch, fetchFn, buttonText } = useFetch();
-  const { authorize } = useAuth();
 
   const isLoading = status === 'LOADING';
 
@@ -59,11 +67,12 @@ const Form = ({ id, endpoint }) => {
     const { username, password } = values;
 
     dispatch({ type: 'fetch' });
-    fetchFn({ endpoint, username, password })
+    fetchFn({ endpoint, username, password, token })
       .then(res => {
         // TODO: Use sid instead of token
         console.log(res.data);
-        authorize({ username, token: res.data.token });
+        authLogIn({ username, token: res.data.token });
+        handleResetForm();
         dispatch({ type: 'fetch_success', payload: res.data });
       })
       .catch(err => {
@@ -72,8 +81,24 @@ const Form = ({ id, endpoint }) => {
       });
   };
 
+  const handleLogOut = e => {
+    e.preventDefault();
+    dispatch({ type: 'logout' });
+    logOut({ endpoint, token })
+      .then(res => {
+        console.log('logged out', res.data);
+        authLogOut();
+        dispatch({ type: 'logout_success' });
+      })
+      .catch(err => {
+        authLogOut();
+        const { message } = (err.response && err.response.data) || err;
+        dispatch({ type: 'fetch_error', payload: message || err.response.status });
+      });
+  };
+
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={isLoggedIn ? handleLogOut : handleSubmit}>
       <div className="column">
         <input
           data-testid={`${id}-login-input`}
@@ -90,16 +115,24 @@ const Form = ({ id, endpoint }) => {
           onChange={handleChange}
         />
         <div>
-          <button data-testid={`${id}-login-submit`} type="submit" disabled={isLoading}>
-            {buttonText}
-          </button>
-          <button
-            type="button"
-            style={{ border: 'none', background: 'none', textDecoration: 'underline' }}
-            onClick={() => dispatch({ type: 'toggle_form' })}
-          >
-            Switch to {buttonText === 'Log In' ? 'Sign Up' : 'Log In'}
-          </button>
+          {isLoggedIn ? (
+            <button data-testid={`${id}-logout`} type="submit">
+              Log Out
+            </button>
+          ) : (
+            <>
+              <button data-testid={`${id}-login-submit`} type="submit" disabled={isLoading}>
+                {buttonText}
+              </button>
+              <button
+                type="button"
+                style={{ border: 'none', background: 'none', textDecoration: 'underline' }}
+                onClick={() => dispatch({ type: 'toggle_form' })}
+              >
+                Switch to {buttonText === 'Log In' ? 'Sign Up' : 'Log In'}
+              </button>
+            </>
+          )}
         </div>
         {status === 'ERROR' && <h1 className="error">Error: {errorMessage}</h1>}
         {isLoading && <h1>Loading...</h1>}

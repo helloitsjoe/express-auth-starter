@@ -179,7 +179,8 @@ describe('simple-token', () => {
     });
   });
 
-  describe('/revoke', () => {
+  // TODO: Logout for JWT + session
+  describe('/logout', () => {
     let body;
     let token;
     let options;
@@ -201,7 +202,7 @@ describe('simple-token', () => {
     });
 
     it('revokes token with valid username', async () => {
-      const revokedRes = await axios.post(`${rootUrl}/simple-token/revoke`, { token });
+      const revokedRes = await axios.post(`${rootUrl}/simple-token/logout`, { token });
       expect(revokedRes.data.token).toBe(token);
 
       await axios.post(`${rootUrl}/simple-token/secure`, body, options).catch(setError);
@@ -209,12 +210,28 @@ describe('simple-token', () => {
       expect(err.response.data.message).toMatch(/unauthorized/i);
     });
 
-    it('responds with 404 if no token exists for username', async () => {
-      await axios.post(`${rootUrl}/simple-token/revoke`, { token: 'foo' }).catch(setError);
+    it('user is still in db', async () => {
+      const revokedRes = await axios.post(`${rootUrl}/simple-token/logout`, { token });
+      expect(revokedRes.data.token).toBe(token);
+
+      await axios.post(`${rootUrl}/simple-token/signup`, body).catch(setError);
+      expect(err.response.status).toBe(401);
+      expect(err.response.data.message).toMatch(/username already exists/i);
+    });
+
+    it('responds with 404 if user has alrady logged out', async () => {
+      const revokedRes = await axios.post(`${rootUrl}/simple-token/logout`, { token });
+      expect(revokedRes.data.token).toBe(token);
+
+      await axios.post(`${rootUrl}/simple-token/logout`, { token }).catch(setError);
       expect(err.response.status).toBe(404);
       expect(err.response.data.message).toMatch(/token not found/i);
     });
 
-    it.todo('TODO: Experiment with postgres/sqlite');
+    it('responds with 404 if no token exists for username', async () => {
+      await axios.post(`${rootUrl}/simple-token/logout`, { token: 'foo' }).catch(setError);
+      expect(err.response.status).toBe(404);
+      expect(err.response.data.message).toMatch(/token not found/i);
+    });
   });
 });

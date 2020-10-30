@@ -1,5 +1,5 @@
 import nock from 'nock';
-import { signUp, login, sendSecure } from '../services';
+import { signUp, login, sendSecure, logOut } from '../services';
 
 const headers = {
   'Access-Control-Allow-Origin': '*',
@@ -11,6 +11,7 @@ const PORT = 3001;
 const URL = `${BASE_URL}:${PORT}`;
 const username = 'foo';
 const password = 'secret';
+const token = '123';
 
 describe('Services', () => {
   it('login sends username and password to endpoint', async () => {
@@ -22,6 +23,12 @@ describe('Services', () => {
   it('signUp hits signup endpoint with username/password', async () => {
     nock(URL).post('/simple-token/signup', { username, password }).reply(200, null, headers);
     const res = await signUp({ endpoint: '/simple-token', username, password });
+    expect(res.status).toBe(200);
+  });
+
+  it('logOut hits logout endpoint with token', async () => {
+    nock(URL).post('/simple-token/logout', { token }).reply(200, null, headers);
+    const res = await logOut({ endpoint: '/simple-token', token });
     expect(res.status).toBe(200);
   });
 

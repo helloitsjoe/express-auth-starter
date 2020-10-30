@@ -28,10 +28,8 @@ const jwtMiddleware = (req, res, next) => {
 const simpleTokenMiddleware = async (req, res, next) => {
   const { authorization } = req.headers;
   const { users } = req.db;
-  console.log(`authorization:`, authorization);
   const token = authorization && authorization.split('Bearer ')[1];
   const user = await users.findOne({ token });
-  console.log(`user:`, user);
   if (!user) {
     const error = new Error('Unauthorized!');
     error.statusCode = 403;

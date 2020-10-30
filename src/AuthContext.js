@@ -14,12 +14,19 @@ export const AuthProvider = ({ children, initialValue, endpoint }) => {
     setState({ token, username, isLoggedIn });
   }, [endpoint]);
 
-  const authorize = ({ username, token }) => {
-    localStorage.setItem(`auth${endpoint}`, JSON.stringify({ token, username, isLoggedIn: true }));
-    setState({ token, username, isLoggedIn: true });
+  const authLogIn = ({ username, token }) => {
+    const isLoggedIn = true;
+    localStorage.setItem(`auth${endpoint}`, JSON.stringify({ token, username, isLoggedIn }));
+    setState({ token, username, isLoggedIn });
   };
 
-  const value = { ...state, authorize };
+  const authLogOut = () => {
+    const isLoggedIn = false;
+    localStorage.setItem(`auth${endpoint}`, JSON.stringify({ isLoggedIn }));
+    setState({ isLoggedIn });
+  };
+
+  const value = { ...state, authLogIn, authLogOut };
 
   console.log('isLoggedIn', state.isLoggedIn);
   return <AuthContext.Provider value={initialValue || value}>{children}</AuthContext.Provider>;
@@ -35,6 +42,5 @@ export const withAuthProvider = Component => props => {
 };
 
 export const useAuth = () => {
-  const { isLoggedIn, username, token, authorize } = useContext(AuthContext);
-  return { isLoggedIn, username, token, authorize };
+  return useContext(AuthContext);
 };

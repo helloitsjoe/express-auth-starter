@@ -19,6 +19,10 @@ export function login({ endpoint, username, password }) {
   return wait().then(() => axios.post(getUrl(`${endpoint}/login`, 3001), { username, password }));
 }
 
+export function logOut({ endpoint, token }) {
+  return wait().then(() => axios.post(getUrl(`${endpoint}/logout`, 3001), { token }));
+}
+
 export function sendSecure({ endpoint, message, token }) {
   return wait().then(() =>
     axios.post(
