@@ -26,11 +26,11 @@ describe('Services', () => {
   });
 
   it('sendSecure sends auth to secure endpoint', async () => {
-    nock(URL).options('/jwt/secure').reply(200, null, headers);
+    nock(URL).options('/session/secure').reply(200, null, headers);
     nock(URL, { reqheaders: { authorization: 'Bearer aaa' } })
-      .post('/jwt/secure', { message: 'hi' })
+      .post('/session/secure', { message: 'hi' })
       .reply(200, null, headers);
-    const res = await sendSecure({ endpoint: '/jwt', message: 'hi', token: 'aaa' });
+    const res = await sendSecure({ endpoint: '/session', message: 'hi', token: 'aaa' });
     expect(res.status).toBe(200);
   });
 });
