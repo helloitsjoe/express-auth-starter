@@ -24,6 +24,7 @@ export function logOut({ endpoint, token }) {
 }
 
 export function sendSecure({ endpoint, message, token }) {
+  // TODO: Cookies for session auth
   return wait().then(() =>
     axios.post(
       getUrl(`${endpoint}/secure`, 3001),

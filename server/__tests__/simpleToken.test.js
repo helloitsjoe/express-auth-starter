@@ -179,7 +179,6 @@ describe('simple-token', () => {
     });
   });
 
-  // TODO: Logout for JWT + session
   describe('/logout', () => {
     let body;
     let token;
@@ -201,7 +200,7 @@ describe('simple-token', () => {
       token = null;
     });
 
-    it('revokes token with valid username', async () => {
+    it('revokes token with valid token', async () => {
       const revokedRes = await axios.post(`${rootUrl}/simple-token/logout`, { token });
       expect(revokedRes.data.token).toBe(token);
 

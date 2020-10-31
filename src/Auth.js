@@ -30,9 +30,9 @@ const queryReducer = (s, a) => {
       console.log(`error:`, a.payload);
       return { ...s, status: 'ERROR', errorMessage: a.payload };
     case 'logout':
-      return { ...s, status: 'LOADING', data: null, errorMessage: '' };
+      return { ...s, status: 'LOADING', errorMessage: '' };
     case 'logout_success':
-      return { ...s, status: 'IDLE', fetchFn: s.fetchFn };
+      return { ...s, status: 'IDLE', data: null, fetchFn: s.fetchFn };
     case 'toggle_form': {
       const fetchFn = s.fetchFn === login ? signUp : login;
       const buttonText = s.buttonText === 'Log In' ? 'Sign Up' : 'Log In';
@@ -84,6 +84,10 @@ const Form = ({ id, endpoint }) => {
   const handleLogOut = e => {
     e.preventDefault();
     dispatch({ type: 'logout' });
+
+    authLogOut();
+    if (endpoint.match(/jwt/)) return dispatch({ type: 'logout_success' });
+
     logOut({ endpoint, token })
       .then(res => {
         console.log('logged out', res.data);
@@ -96,7 +100,7 @@ const Form = ({ id, endpoint }) => {
         dispatch({ type: 'fetch_error', payload: message || err.response.status });
       });
   };
-
+  console.log(`status:`, status);
   return (
     <form onSubmit={isLoggedIn ? handleLogOut : handleSubmit}>
       <div className="column">
@@ -142,10 +146,11 @@ const Form = ({ id, endpoint }) => {
   );
 };
 
+// MAYBE: Move this and Form into single component so useFetch works for both?
 const SendMessage = ({ id, endpoint }) => {
   const { handleChange, values } = useForm({ secureMessage: '' });
   const { status, data, errorMessage, dispatch } = useFetch();
-  const { token } = useAuth();
+  const { token, isLoggedIn } = useAuth();
 
   const isLoading = status === 'LOADING';
 
@@ -176,9 +181,9 @@ const SendMessage = ({ id, endpoint }) => {
       <button data-testid={`${id}-submit`} type="submit" disabled={isLoading}>
         Send
       </button>
-      {errorMessage && <h1 className="error">Error: {errorMessage}</h1>}
+      {status === 'ERROR' && <h1 className="error">Error: {errorMessage}</h1>}
       {isLoading && <h1>Loading...</h1>}
-      {data && <pre>{JSON.stringify(data, null, 2)}</pre>}
+      {isLoggedIn && data && <pre>{JSON.stringify(data, null, 2)}</pre>}
     </form>
   );
 };
