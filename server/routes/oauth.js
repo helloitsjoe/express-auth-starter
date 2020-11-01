@@ -20,7 +20,7 @@ router.get('/code', (req, res) => {
   authCodes.add(authCode);
 
   // Normally this would use a `redirect_uri` parameter
-  res.redirect(`http://localhost:3000/oauth-callback.html?code=${authCode}`);
+  res.redirect(`http://localhost:3001/oauth-callback.html?code=${authCode}`);
 });
 
 router.post('/token', (req, res) => {

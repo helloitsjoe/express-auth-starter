@@ -62,6 +62,8 @@ const Form = ({ id, endpoint }) => {
 
   const isLoading = status === 'LOADING';
 
+  // TODO: Log in/confirm logged in when page is mounted
+
   const handleSubmit = e => {
     e.preventDefault();
     const { username, password } = values;
@@ -150,7 +152,7 @@ const Form = ({ id, endpoint }) => {
 const SendMessage = ({ id, endpoint }) => {
   const { handleChange, values } = useForm({ secureMessage: '' });
   const { status, data, errorMessage, dispatch } = useFetch();
-  const { token, isLoggedIn } = useAuth();
+  const { token, isLoggedIn, authLogOut } = useAuth();
 
   const isLoading = status === 'LOADING';
 
