@@ -14,7 +14,7 @@ const makeAuthServer = async (port = 3001, db) => {
   const app = express();
   const server = http.createServer(app);
 
-  app.use(express.static(path.join(__dirname, '../public/oauth')));
+  app.use(express.static(path.join(__dirname, '../public')));
   app.use(cors());
   app.use(bodyParser.json());
   app.use(

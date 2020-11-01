@@ -100,7 +100,7 @@ const Form = ({ id, endpoint }) => {
         dispatch({ type: 'fetch_error', payload: message || err.response.status });
       });
   };
-  console.log(`status:`, status);
+
   return (
     <form onSubmit={isLoggedIn ? handleLogOut : handleSubmit}>
       <div className="column">

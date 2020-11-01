@@ -24,7 +24,6 @@ export function logOut({ endpoint, token }) {
 }
 
 export function sendSecure({ endpoint, message, token }) {
-  // TODO: Cookies for session auth
   return wait().then(() =>
     axios.post(
       getUrl(`${endpoint}/secure`, 3001),
@@ -38,6 +37,7 @@ export function oauth() {
   return wait()
     .then(() => {
       return new Promise((resolve, reject) => {
+        // TODO: Don't open in popup?
         openOauth(getUrl('/oauth', 3001), (err, data) => {
           if (err) return reject(err);
           return resolve(data);
