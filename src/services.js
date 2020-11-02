@@ -28,7 +28,7 @@ export function sendSecure({ endpoint, message, token }) {
     axios.post(
       getUrl(`${endpoint}/secure`, 3001),
       { message },
-      { headers: { authorization: `Bearer ${token}` } }
+      { headers: { Authorization: `Bearer ${token}` }, withCredentials: true, crossDomain: true }
     )
   );
 }

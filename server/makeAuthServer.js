@@ -14,6 +14,8 @@ const makeAuthServer = async (port = 3001, db) => {
   const app = express();
   const server = http.createServer(app);
 
+  // HTML and API need to live on the same port for session auth, haven't
+  // figured out how to get cross-domain cookies working.
   app.use(express.static(path.join(__dirname, '../public')));
   app.use(cors());
   app.use(bodyParser.json());

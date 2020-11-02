@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 
-import React from 'react';
+import React, { useRef } from 'react';
 import { login, sendSecure, signUp, logOut } from './services';
 import { withAuthProvider, useAuth } from './AuthContext';
 
@@ -60,6 +60,8 @@ const Form = ({ id, endpoint }) => {
   const { authLogIn, authLogOut, isLoggedIn, token } = useAuth();
   const { status, data, errorMessage, dispatch, fetchFn, buttonText } = useFetch();
 
+  const passwordRef = useRef();
+
   const isLoading = status === 'LOADING';
 
   // TODO: Log in/confirm logged in when page is mounted
@@ -117,6 +119,7 @@ const Form = ({ id, endpoint }) => {
           name="password"
           data-testid={`${id}-password-input`}
           placeholder="Password"
+          ref={passwordRef}
           value={values.password}
           onChange={handleChange}
         />
@@ -133,7 +136,10 @@ const Form = ({ id, endpoint }) => {
               <button
                 type="button"
                 style={{ border: 'none', background: 'none', textDecoration: 'underline' }}
-                onClick={() => dispatch({ type: 'toggle_form' })}
+                onClick={() => {
+                  passwordRef.current.focus();
+                  dispatch({ type: 'toggle_form' });
+                }}
               >
                 Switch to {buttonText === 'Log In' ? 'Sign Up' : 'Log In'}
               </button>
