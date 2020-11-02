@@ -37,14 +37,16 @@ export function oauth() {
   return wait()
     .then(() => {
       return new Promise((resolve, reject) => {
-        // TODO: Don't open in popup?
-        openOauth(getUrl('/oauth', 3001), (err, data) => {
+        // TODO: Redirect instead of popup
+        // TODO: Don't use openOauth - implement yourself
+        // window.location.assign(getUrl(`/oauth?redirect_to=${window.location.href}`, 3001));
+        openOauth(getUrl(`/oauth`, 3001), (err, data) => {
           if (err) return reject(err);
           return resolve(data);
         });
       });
     })
-    .then(params => axios.post(getUrl('/oauth/token', 3001), { code: params.code }))
+    .then(({ code }) => axios.post(getUrl('/oauth/token', 3001), { code }))
     .then(({ data }) => data.access_token);
 }
 

@@ -12,6 +12,7 @@
     <button id="authorize-button">Authorize</button>
     <script type="text/javascript">
       document.getElementById('authorize-button').addEventListener('click', () => {
+        // window.location.href = '/oauth/code?redirect_to=REDIRECT_TO';
         window.location.href = '/oauth/code';
       });
     </script>

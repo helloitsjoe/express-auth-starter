@@ -152,7 +152,7 @@ const Form = ({ id, endpoint }) => {
 const SendMessage = ({ id, endpoint }) => {
   const { handleChange, values } = useForm({ secureMessage: '' });
   const { status, data, errorMessage, dispatch } = useFetch();
-  const { token, isLoggedIn, authLogOut } = useAuth();
+  const { token, isLoggedIn } = useAuth();
 
   const isLoading = status === 'LOADING';
 

@@ -1,9 +1,10 @@
 // This example is based on http://thecodebarbarian.com/oauth-with-node-js-and-express.html
-const express = require('express');
+// const fs = require('fs');
 const path = require('path');
+const express = require('express');
 const { generateRandom, ONE_DAY_IN_SECONDS } = require('../utils');
 
-// Store codes and tokens in memory. In a real server this would use a DB
+// TODO: Do this in DB
 const authCodes = new Set();
 const accessTokens = new Set();
 
@@ -11,6 +12,12 @@ const router = express.Router();
 
 router.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../../public', 'oauth-dialog.html'));
+  // fs.readFile(path.join(__dirname, '../../public', 'oauth-dialog.html'), 'utf-8', (err, html) => {
+  //   console.log(`html:`, html);
+  //   const htmlWithData = html.replace('REDIRECT_TO', req.query.redirect_to);
+  //   console.log(`htmlWithData:`, htmlWithData);
+  //   res.send(htmlWithData);
+  // });
 });
 
 router.get('/code', (req, res) => {
@@ -20,6 +27,7 @@ router.get('/code', (req, res) => {
   authCodes.add(authCode);
 
   // Normally this would use a `redirect_uri` parameter
+  // res.redirect(`${req.query.redirect_to}?code=${authCode}`);
   res.redirect(`http://localhost:3001/oauth-callback.html?code=${authCode}`);
 });
 
