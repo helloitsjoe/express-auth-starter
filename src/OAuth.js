@@ -35,7 +35,12 @@ const OAuth = ({ title }) => {
 
   return (
     <form onSubmit={handleSendSecure}>
-      <h3>{title}</h3>
+      <h3 style={{ display: 'inline' }}>{title}</h3>
+      {authToken ? (
+        <span style={{ color: 'darkseagreen' }}> Logged in</span>
+      ) : (
+        <span style={{ color: 'gray' }}> Logged out</span>
+      )}
       <div className="column">
         <button type="button" onClick={handleOauth}>
           Authorize with OAuth
@@ -46,6 +51,9 @@ const OAuth = ({ title }) => {
           onChange={e => setMessage(e.target.value)}
           value={message}
         />
+        <button type="button" onClick={() => setAuthToken(null)}>
+          Log out
+        </button>
         <button type="submit">Send OAuth message</button>
         {secureData && <pre>{secureData}</pre>}
         {errorMessage && <h1 className="error">Error: {errorMessage}</h1>}
