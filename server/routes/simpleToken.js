@@ -70,17 +70,17 @@ router.post('/logout', async (req, res) => {
   // TODO: admin auth
   const { users } = req.db;
   const { token } = req.body;
-  console.log(`token:`, token);
+
   const user = await users.findOne({ token });
-  console.log(`user:`, user);
+
   if (!user) {
     return res.status(404).json({ message: 'Token not found!' });
   }
 
   const { username } = user;
   await users.updateOne({ username }, { token: null, expires_in: null });
-  const userAfter = await users.findOne({ token });
-  console.log(`userAfter:`, userAfter);
+  // const userAfter = await users.findOne({ token });
+
   return res.json({ token });
 });
 

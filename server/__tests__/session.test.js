@@ -211,21 +211,12 @@ describe('session', () => {
     });
 
     it('user is still in db', async () => {
-      const revokedRes = await axios.post(`${rootUrl}/simple-token/logout`, {}, options);
-      expect(revokedRes.data.message).toBe(/logged out/i);
+      const revokedRes = await axios.post(`${rootUrl}/session/logout`, {}, options);
+      expect(revokedRes.data.message).toMatch(/logged out/i);
 
-      await axios.post(`${rootUrl}/simple-token/signup`, body).catch(setError);
+      await axios.post(`${rootUrl}/session/signup`, body).catch(setError);
       expect(err.response.status).toBe(401);
       expect(err.response.data.message).toMatch(/username already exists/i);
-    });
-
-    it('responds with 404 if user has alrady logged out', async () => {
-      const revokedRes = await axios.post(`${rootUrl}/simple-token/logout`, { token });
-      expect(revokedRes.data.token).toBe(token);
-
-      await axios.post(`${rootUrl}/simple-token/logout`, { token }).catch(setError);
-      expect(err.response.status).toBe(404);
-      expect(err.response.data.message).toMatch(/token not found/i);
     });
 
     it('responds with 403 if no cookie provided', async () => {

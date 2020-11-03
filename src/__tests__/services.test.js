@@ -4,6 +4,7 @@ import { signUp, login, sendSecure, logOut } from '../services';
 const headers = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization',
+  'Access-Control-Allow-Credentials': 'true',
 };
 
 const BASE_URL = 'http://localhost';

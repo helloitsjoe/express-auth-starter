@@ -47,10 +47,12 @@ const makeError = (status = 403, message = 'Unauthorized!') => {
 
 const sessionMiddleware = async (req, res, next) => {
   // req.session.id is set from cookie in expressSession
+  console.log(`req.session:`, req.session);
+  console.log(`req.headers:`, req.headers);
   req.sessionStore.get(req.session.id, async (err, session) => {
     if (err) return next(err);
     if (!session) return next(makeError());
-
+    console.log(`session:`, session);
     const user = await req.db.users.findOne({ token: session.user });
 
     if (!user) return next(makeError(404, 'User not found'));
