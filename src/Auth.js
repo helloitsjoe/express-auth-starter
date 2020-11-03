@@ -1,8 +1,17 @@
 /* eslint-disable react/prop-types */
 
 import React, { useRef } from 'react';
+import styled from 'styled-components';
 import { login, sendSecure, signUp, logOut } from './services';
 import { withAuthProvider, useAuth } from './AuthContext';
+import { Button, Input, TitleWrap, SendFormWrapper } from './Components';
+import { Actions } from './Login';
+
+const FormColumn = styled.div`
+  display: flex;
+  flex-direction: column;
+  min-width: 20em;
+`;
 
 const useForm = initialValues => {
   const [values, setValues] = React.useState(initialValues);
@@ -33,11 +42,6 @@ const queryReducer = (s, a) => {
       return { ...s, status: 'LOADING', errorMessage: '' };
     case 'logout_success':
       return { ...s, status: 'IDLE', data: null, fetchFn: s.fetchFn };
-    case 'toggle_form': {
-      const fetchFn = s.fetchFn === login ? signUp : login;
-      const buttonText = s.buttonText === 'Log In' ? 'Sign Up' : 'Log In';
-      return { ...s, fetchFn, buttonText };
-    }
     default:
       return s;
   }
@@ -48,21 +52,26 @@ const useFetch = () => {
     status: 'IDLE',
     data: null,
     errorMessage: '',
-    fetchFn: signUp,
-    buttonText: 'Sign Up',
+    // fetchFn: signUp,
+    // buttonText: 'Sign Up',
   });
 
   return { ...state, dispatch };
 };
 
-const Form = ({ id, endpoint }) => {
+const Form = ({ id, endpoint, action }) => {
   const { handleChange, handleResetForm, values } = useForm({ username: '', password: '' });
   const { authLogIn, authLogOut, isLoggedIn, token } = useAuth();
-  const { status, data, errorMessage, dispatch, fetchFn, buttonText } = useFetch();
+  const { status, errorMessage, dispatch } = useFetch();
 
   const passwordRef = useRef();
 
   const isLoading = status === 'LOADING';
+  const getButtonText = () => {
+    if (isLoading) return 'Loading...';
+    return action === Actions.LOGIN ? 'Log In' : 'Sign Up';
+  };
+  const fetchFn = action === Actions.LOGIN ? login : signUp;
 
   // TODO: Log in/confirm logged in when page is mounted
 
@@ -92,7 +101,7 @@ const Form = ({ id, endpoint }) => {
     authLogOut();
     if (endpoint.match(/jwt/)) return dispatch({ type: 'logout_success' });
 
-    logOut({ endpoint, token })
+    return logOut({ endpoint, token })
       .then(res => {
         console.log('logged out', res.data);
         authLogOut();
@@ -107,49 +116,37 @@ const Form = ({ id, endpoint }) => {
 
   return (
     <form onSubmit={isLoggedIn ? handleLogOut : handleSubmit}>
-      <div className="column">
-        <input
-          data-testid={`${id}-login-input`}
-          placeholder="Name"
-          name="username"
-          value={values.username}
-          onChange={handleChange}
-        />
-        <input
-          name="password"
-          data-testid={`${id}-password-input`}
-          placeholder="Password"
-          ref={passwordRef}
-          value={values.password}
-          onChange={handleChange}
-        />
-        <div>
-          {isLoggedIn ? (
-            <button data-testid={`${id}-logout`} type="submit">
-              Log Out
-            </button>
-          ) : (
-            <>
-              <button data-testid={`${id}-login-submit`} type="submit" disabled={isLoading}>
-                {buttonText}
-              </button>
-              <button
-                type="button"
-                style={{ border: 'none', background: 'none', textDecoration: 'underline' }}
-                onClick={() => {
-                  passwordRef.current.focus();
-                  dispatch({ type: 'toggle_form' });
-                }}
-              >
-                Switch to {buttonText === 'Log In' ? 'Sign Up' : 'Log In'}
-              </button>
-            </>
-          )}
-        </div>
-        {status === 'ERROR' && <h1 className="error">Error: {errorMessage}</h1>}
-        {isLoading && <h1>Loading...</h1>}
-        {data && <pre>{JSON.stringify(data, null, 2)}</pre>}
-      </div>
+      <FormColumn>
+        {isLoggedIn ? (
+          <Button secondary fullWidth data-testid={`${id}-logout`} type="submit">
+            Log Out
+          </Button>
+        ) : (
+          <>
+            <Input
+              autoFocus
+              data-testid={`${id}-login-input`}
+              placeholder="Name"
+              name="username"
+              value={values.username}
+              onChange={handleChange}
+            />
+            <Input
+              name="password"
+              data-testid={`${id}-password-input`}
+              placeholder="Password"
+              ref={passwordRef}
+              value={values.password}
+              onChange={handleChange}
+            />
+            <Button fullWidth data-testid={`${id}-login-submit`} type="submit" disabled={isLoading}>
+              {getButtonText()}
+            </Button>
+          </>
+        )}
+        {status === 'ERROR' && <h3 className="error">Error: {errorMessage}</h3>}
+        {/* {data && <pre>{JSON.stringify(data, null, 2)}</pre>} */}
+      </FormColumn>
     </form>
   );
 };
@@ -179,37 +176,42 @@ const SendMessage = ({ id, endpoint }) => {
 
   return (
     <form onSubmit={handleSubmit}>
-      <input
-        placeholder="Send a message"
-        name="secureMessage"
-        data-testid={`${id}-input`}
-        value={values.secureMessage}
-        onChange={handleChange}
-      />
-      <button data-testid={`${id}-submit`} type="submit" disabled={isLoading}>
-        Send
-      </button>
-      {status === 'ERROR' && <h1 className="error">Error: {errorMessage}</h1>}
-      {isLoading && <h1>Loading...</h1>}
-      {isLoggedIn && data && <pre>{JSON.stringify(data, null, 2)}</pre>}
+      <SendFormWrapper>
+        <Input
+          group
+          placeholder="Send a message"
+          name="secureMessage"
+          data-testid={`${id}-input`}
+          value={values.secureMessage}
+          onChange={handleChange}
+        />
+        <Button data-testid={`${id}-submit`} type="submit" disabled={isLoading}>
+          Send
+        </Button>
+      </SendFormWrapper>
+      {status === 'ERROR' && <h3 className="error">Error: {errorMessage}</h3>}
+      {isLoading && <span>Loading...</span>}
+      {/* {isLoggedIn && data && <pre>{JSON.stringify(data, null, 2)}</pre>} */}
+      {isLoggedIn && data && <pre>{data.message}</pre>}
     </form>
   );
 };
 
-// TODO: Change endpoint to id
-const Auth = ({ endpoint, title }) => {
-  const id = endpoint.slice(1);
+const Auth = ({ id, title, action }) => {
+  const endpoint = `/${id}`;
   const { isLoggedIn, username } = useAuth();
 
   return (
     <>
-      <h3 style={{ display: 'inline' }}>{title}</h3>
-      {isLoggedIn ? (
-        <span style={{ color: 'darkseagreen' }}> Logged in as {username}</span>
-      ) : (
-        <span style={{ color: 'gray' }}> Logged out</span>
-      )}
-      <Form endpoint={endpoint} id={id} />
+      <TitleWrap>
+        <h3 style={{ display: 'inline' }}>{title}</h3>
+        {isLoggedIn ? (
+          <span style={{ color: 'darkseagreen' }}> Logged in as {username}</span>
+        ) : (
+          <span style={{ color: 'gray' }}> Logged out</span>
+        )}
+      </TitleWrap>
+      <Form endpoint={endpoint} id={id} action={action} />
       <SendMessage endpoint={endpoint} id={id} />
     </>
   );
