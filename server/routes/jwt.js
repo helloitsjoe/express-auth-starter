@@ -3,13 +3,11 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const { jwtMiddleware } = require('../middleware');
-const { ONE_HOUR_IN_SECONDS, makeResponse } = require('../utils');
+const { getTokenExp, makeResponse } = require('../utils');
 
 const router = express.Router();
 
 const SALT_ROUNDS = 1;
-
-const EXPIRATION = process.env.TOKEN_EXPIRATION || ONE_HOUR_IN_SECONDS;
 
 const handleSignUp = async ({ username, password }, users) => {
   if (!username || !password) {
@@ -25,7 +23,7 @@ const handleSignUp = async ({ username, password }, users) => {
   const hash = await bcrypt.hash(password, SALT_ROUNDS).catch(console.error);
   await users.insertOne({ username, hash });
 
-  const token = jwt.sign({ username }, process.env.JWT_SECRET, { expiresIn: EXPIRATION });
+  const token = jwt.sign({ username }, process.env.JWT_SECRET, { expiresIn: getTokenExp() });
   return makeResponse({ token });
 };
 
@@ -45,7 +43,7 @@ const handleLogin = async ({ username, password }, users) => {
     return makeResponse({ message: `Wrong password for user ${username}`, status: 401 });
   }
 
-  const token = jwt.sign({ username }, process.env.JWT_SECRET, { expiresIn: EXPIRATION });
+  const token = jwt.sign({ username }, process.env.JWT_SECRET, { expiresIn: getTokenExp() });
   return makeResponse({ token });
 };
 
@@ -54,16 +52,13 @@ router.post('/signup', async (req, res) => {
   res.status(status).json(rest);
 });
 
-// TODO: /login GET endpoint
-// router.get('/login', jwtMiddleware, async (req, res) => {
-//   console.log(`req.user:`, req.user);
-//   // const { status, ...rest } = await handleLogin(req.body, req.db.users);
-//   res.json({ loggedIn: !!req.user });
-// });
-
 router.post('/login', async (req, res) => {
   const { status, ...rest } = await handleLogin(req.body, req.db.users);
   res.status(status).json(rest);
+});
+
+router.get('/login', jwtMiddleware, (req, res) => {
+  res.json({ user: req.user });
 });
 
 router.post('/secure', jwtMiddleware, (req, res) => {

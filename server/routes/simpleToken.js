@@ -61,6 +61,10 @@ router.post('/login', async (req, res) => {
   res.status(status).json(rest);
 });
 
+router.get('/login', simpleTokenMiddleware, (req, res) => {
+  res.json({ user: req.user });
+});
+
 router.post('/secure', simpleTokenMiddleware, async (req, res) => {
   // TODO: check expiration
   return res.json({ message: `Hello from simple-token auth, ${req.user.username}!` });

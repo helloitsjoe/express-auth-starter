@@ -1,5 +1,5 @@
 import nock from 'nock';
-import { signUp, login, sendSecure, logOut } from '../services';
+import { signUp, login, sendSecure, logOut, checkLoggedIn } from '../services';
 
 const headers = {
   'Access-Control-Allow-Origin': '*',
@@ -18,6 +18,15 @@ describe('Services', () => {
   it('login sends username and password to endpoint', async () => {
     nock(URL).post('/jwt/login', { username, password }).reply(200, null, headers);
     const res = await login({ endpoint: '/jwt', username, password });
+    expect(res.status).toBe(200);
+  });
+
+  it('checkLoggedIn sends token to endpoint', async () => {
+    nock(URL).options('/jwt/login').reply(200, null, headers);
+    nock(URL, { reqheaders: { authorization: `Bearer ${token}` } })
+      .get('/jwt/login')
+      .reply(200, null, headers);
+    const res = await checkLoggedIn({ endpoint: '/jwt', token });
     expect(res.status).toBe(200);
   });
 

@@ -4,7 +4,9 @@ import axios from 'axios';
 
 const getUrl = (endpoint, port = 3000) => `http://localhost:${port}${endpoint}`;
 
-const wait = (ms = 500, shouldFail = false) =>
+const DEFAULT_MS = process.env.NODE_ENV === 'test' ? 0 : 500;
+
+export const wait = (ms = DEFAULT_MS, shouldFail = false) =>
   new Promise((resolve, reject) =>
     setTimeout(() => {
       return shouldFail ? reject(new Error('Oh nuts')) : resolve();
@@ -21,6 +23,16 @@ export function login({ endpoint, username, password }) {
 
 export function logOut({ endpoint, token }) {
   return wait().then(() => axios.post(getUrl(`${endpoint}/logout`, 3001), { token }));
+}
+
+export function checkLoggedIn({ endpoint, token }) {
+  return wait().then(() =>
+    axios.get(getUrl(`${endpoint}/login`, 3001), {
+      headers: { Authorization: `Bearer ${token}` },
+      withCredentials: true,
+      crossDomain: true,
+    })
+  );
 }
 
 export function sendSecure({ endpoint, message, token }) {

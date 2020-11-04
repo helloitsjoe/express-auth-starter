@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 
-import React, { useRef } from 'react';
-import { login, sendSecure, signUp, logOut } from './services';
+import React, { useEffect, useRef } from 'react';
+import { login, sendSecure, signUp, logOut, checkLoggedIn } from './services';
 import { withAuthProvider, useAuth } from './AuthContext';
 
 const useForm = initialValues => {
@@ -48,8 +48,8 @@ const useFetch = () => {
     status: 'IDLE',
     data: null,
     errorMessage: '',
-    fetchFn: signUp,
-    buttonText: 'Sign Up',
+    fetchFn: login,
+    buttonText: 'Log In',
   });
 
   return { ...state, dispatch };
@@ -64,7 +64,26 @@ const Form = ({ id, endpoint }) => {
 
   const isLoading = status === 'LOADING';
 
-  // TODO: Log in/confirm logged in when page is mounted
+  useEffect(() => {
+    if (!token) return;
+
+    checkLoggedIn({ endpoint, token })
+      .then(res => {
+        const { username } = res.data.user;
+        console.log(`username:`, username);
+        authLogIn({ username, token });
+      })
+      .catch(err => {
+        console.log(`err:`, err);
+        if (err.message.match(/expired/i)) {
+          // TODO: Refresh token
+          console.log('Expired token, logging out...');
+        }
+        authLogOut();
+        const { message } = (err.response && err.response.data) || err;
+        dispatch({ type: 'fetch_error', payload: message || err.response.status });
+      });
+  }, [token, endpoint]);
 
   const handleSubmit = e => {
     e.preventDefault();

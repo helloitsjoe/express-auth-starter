@@ -1,7 +1,11 @@
 /* eslint-disable camelcase */
 const crypto = require('crypto');
 
-const ONE_HOUR_IN_SECONDS = Math.floor(Date.now() / 1000) + 60 * 60;
+const ONE_HOUR_IN_SECONDS = 60 * 60;
+
+const getTokenExp = () => {
+  return process.env.TOKEN_EXPIRATION || ONE_HOUR_IN_SECONDS;
+};
 
 const makeResponse = ({ message, token, status = 200 }) => ({
   message,
@@ -31,6 +35,7 @@ const getCookie = res => {
 module.exports = {
   ONE_HOUR_IN_SECONDS,
   getCookie,
+  getTokenExp,
   generateRandom,
   makeResponse,
 };

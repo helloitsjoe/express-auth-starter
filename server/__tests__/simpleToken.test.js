@@ -86,42 +86,56 @@ describe('simple-token', () => {
   });
 
   describe('/login', () => {
-    it('returns token for valid login', async () => {
-      const body = { username: 'foo', password: 'bar' };
-      await axios.post(`${rootUrl}/simple-token/signup`, body);
-      const res = await axios.post(`${rootUrl}/simple-token/login`, body);
-      expect(typeof res.data.token).toBe('string');
+    describe('POST', () => {
+      it('returns token for valid login', async () => {
+        const body = { username: 'foo', password: 'bar' };
+        await axios.post(`${rootUrl}/simple-token/signup`, body);
+        const res = await axios.post(`${rootUrl}/simple-token/login`, body);
+        expect(typeof res.data.token).toBe('string');
+      });
+
+      it('returns error if no username', async () => {
+        expect.assertions(2);
+        const body = { password: 'bar' };
+        await axios.post(`${rootUrl}/simple-token/login`, body).catch(setError);
+        expect(err.response.status).toBe(401);
+        expect(err.response.data.message).toMatch(/username and password are both required/i);
+      });
+
+      it('returns error if no password', async () => {
+        const body = { username: 'foo' };
+        await axios.post(`${rootUrl}/simple-token/login`, body).catch(setError);
+        expect(err.response.status).toBe(401);
+        expect(err.response.data.message).toMatch(/username and password are both required/i);
+      });
+
+      it('returns error if password does not match', async () => {
+        const body = { username: 'foo', password: 'bar' };
+        await axios.post(`${rootUrl}/simple-token/signup`, body);
+        const wrong = { username: 'foo', password: 'not-bar' };
+        await axios.post(`${rootUrl}/simple-token/login`, wrong).catch(setError);
+        expect(err.response.status).toBe(401);
+        expect(err.response.data.message).toMatch(/username and password do not match/i);
+      });
+
+      it('returns error if username does not exist', async () => {
+        const body = { username: 'foo', password: 'bar' };
+        await axios.post(`${rootUrl}/simple-token/login`, body).catch(setError);
+        expect(err.response.status).toBe(401);
+        expect(err.response.data.message).toMatch(/username foo does not exist/i);
+      });
     });
 
-    it('returns error if no username', async () => {
-      expect.assertions(2);
-      const body = { password: 'bar' };
-      await axios.post(`${rootUrl}/simple-token/login`, body).catch(setError);
-      expect(err.response.status).toBe(401);
-      expect(err.response.data.message).toMatch(/username and password are both required/i);
-    });
+    describe('GET', () => {
+      it('returns token for valid login', async () => {
+        const body = { username: 'foo', password: 'bar' };
+        const { data } = await axios.post(`${rootUrl}/simple-token/signup`, body);
+        const options = { headers: { Authorization: `Bearer ${data.token}` } };
+        const res = await axios.get(`${rootUrl}/simple-token/login`, options);
+        expect(res.data.user.username).toBe(body.username);
+      });
 
-    it('returns error if no password', async () => {
-      const body = { username: 'foo' };
-      await axios.post(`${rootUrl}/simple-token/login`, body).catch(setError);
-      expect(err.response.status).toBe(401);
-      expect(err.response.data.message).toMatch(/username and password are both required/i);
-    });
-
-    it('returns error if password does not match', async () => {
-      const body = { username: 'foo', password: 'bar' };
-      await axios.post(`${rootUrl}/simple-token/signup`, body);
-      const wrong = { username: 'foo', password: 'not-bar' };
-      await axios.post(`${rootUrl}/simple-token/login`, wrong).catch(setError);
-      expect(err.response.status).toBe(401);
-      expect(err.response.data.message).toMatch(/username and password do not match/i);
-    });
-
-    it('returns error if username does not exist', async () => {
-      const body = { username: 'foo', password: 'bar' };
-      await axios.post(`${rootUrl}/simple-token/login`, body).catch(setError);
-      expect(err.response.status).toBe(401);
-      expect(err.response.data.message).toMatch(/username foo does not exist/i);
+      it.todo('returns error for expired token');
     });
   });
 
