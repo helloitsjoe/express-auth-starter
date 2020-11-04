@@ -14,7 +14,6 @@ const jwtMiddleware = (req, res, next) => {
   }
   try {
     // JWT has build in expiration check
-    console.log(`authorization:`, authorization);
     const token = authorization.split('Bearer ')[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = { username: decoded.username };
@@ -48,14 +47,10 @@ const makeError = (status = 403, message = 'Unauthorized!') => {
 
 const sessionMiddleware = async (req, res, next) => {
   // req.session.id is set from cookie in expressSession
-  console.log(`req.body:`, req.body);
-  console.log(`req.session:`, req.session);
-  console.log(`req.headers:`, req.headers);
   req.sessionStore.get(req.session.id, async (err, session) => {
-    console.log(`session:`, session);
     if (err) return next(err);
     if (!session) return next(makeError());
-    console.log(`session:`, session);
+
     const user = await req.db.users.findOne({ token: session.user });
 
     if (!user) return next(makeError(404, 'User not found'));
