@@ -206,7 +206,7 @@ const Auth = ({ id, title, action }) => {
       <TitleWrap>
         <h3 style={{ display: 'inline' }}>{title}</h3>
         {isLoggedIn ? (
-          <span style={{ color: 'darkseagreen' }}> Logged in as {username}</span>
+          <span style={{ color: 'limegreen' }}> Logged in as {username}</span>
         ) : (
           <span style={{ color: 'gray' }}> Logged out</span>
         )}

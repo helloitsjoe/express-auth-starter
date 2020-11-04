@@ -8,18 +8,18 @@ export const Input = styled.input`
   border-bottom: 2px solid lightgray;
   &:focus {
     outline: none;
-    border: 2px solid darkseagreen;
+    border: 2px solid dodgerblue;
   }
 `;
 
 export const Button = styled.button`
   background: none;
   border: none;
-  /* color: ${props => (props.secondary ? 'darkseagreen' : 'white')}; */
+  /* color: ${props => (props.secondary ? 'dodgerblue' : 'white')}; */
   color: white;
 
-  border: 2px solid ${props => (props.secondary ? 'lightgray' : 'darkseagreen')};
-  background-color: ${props => (props.secondary ? 'lightgray' : 'darkseagreen')};
+  border: 2px solid ${props => (props.secondary ? 'lightskyblue' : 'dodgerblue')};
+  background-color: ${props => (props.secondary ? 'lightskyblue' : 'dodgerblue')};
   margin: 0.5em 0;
   padding: 1em;
   /* &:last-child:not(:only-child) {
@@ -30,9 +30,14 @@ export const Button = styled.button`
   &:focus {
     outline: none;
     border: 2px solid black;
-    background-color: darkseagreen;
+    background-color: dodgerblue;
     color: white;
-    /* background-color: ${props => (props.secondary ? 'darkseagreen' : 'white')} */
+    /* background-color: ${props => (props.secondary ? 'dodgerblue' : 'white')} */
+  }
+
+  &:hover {
+    background-color: dodgerblue;
+    border: 2px solid dodgerblue;
   }
 
   &:disabled {
@@ -50,4 +55,9 @@ export const TitleWrap = styled.div`
 export const SendFormWrapper = styled.div`
   display: flex;
   justify-content: space-between;
+
+  & > input,
+  & > input:focus {
+    border-right: none;
+  }
 `;

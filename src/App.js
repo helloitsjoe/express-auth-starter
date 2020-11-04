@@ -5,10 +5,6 @@ import OAuth from './OAuth';
 // TODO: Passport
 // import Passport from './Passport';
 
-// const JWT = props => <Auth {...props} />;
-// const Session = props => <Auth {...props} />;
-// const SimpleToken = props => <Auth {...props} />;
-
 const config = {
   jwt: { id: 'jwt', title: 'JWT', Component: Auth },
   'simple-token': { id: 'simple-token', title: 'Simple Token', Component: Auth },

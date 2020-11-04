@@ -39,7 +39,7 @@ const Tab = styled.button`
   &:focus {
     outline: none;
     box-shadow: 0px ${({ placement }) => (placement === 'top' ? '3px' : '-3px')} 0px inset
-      darkseagreen;
+      dodgerblue;
     /* border-bottom: 3px solid red; */
   }
 `;
@@ -76,7 +76,7 @@ const Login = ({ children, config = {} }) => {
 export const TabGroup = ({ children, placement = 'top' }) => {
   return (
     <TabContext.Provider value={{ placement }}>
-      <TabGroupWrap>{children}</TabGroupWrap>
+      <TabGroupWrap role="tablist">{children}</TabGroupWrap>
     </TabContext.Provider>
   );
 };
@@ -86,7 +86,14 @@ export const AuthTab = ({ children, id }) => {
   const { placement } = useContext(TabContext);
 
   return (
-    <Tab placement={placement} active={id === currentId} onClick={() => setCurrentId(id)}>
+    <Tab
+      role="tab"
+      aria-selected={id === currentId}
+      aria-controls={id}
+      placement={placement}
+      active={id === currentId}
+      onClick={() => setCurrentId(id)}
+    >
       {children}
     </Tab>
   );
@@ -98,6 +105,7 @@ export const LoginTab = ({ children, action }) => {
 
   return (
     <Tab
+      role="tab"
       placement={placement}
       active={currentAction === action}
       onClick={() => setCurrentAction(action)}
@@ -113,7 +121,7 @@ export const Main = () => {
 
   return (
     <MainContainer>
-      <div>
+      <div role="tabpanel">
         <Component key={currentId} action={currentAction} {...props} />
       </div>
     </MainContainer>
