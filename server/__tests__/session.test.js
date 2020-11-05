@@ -4,7 +4,14 @@
 const axios = require('axios');
 const makeAuthServer = require('../makeAuthServer');
 const { makeTestDbApi } = require('../db');
-const { getCookie } = require('../utils');
+const { getCookie, getTokenExp, ONE_HOUR_IN_SECONDS } = require('../utils');
+
+jest.mock('../utils', () => {
+  return {
+    ...jest.requireActual('../utils'),
+    getTokenExp: jest.fn(),
+  };
+});
 
 let db;
 let err;
@@ -17,6 +24,7 @@ const setError = e => {
 };
 
 beforeEach(async () => {
+  getTokenExp.mockReturnValue(ONE_HOUR_IN_SECONDS);
   db = { users: makeTestDbApi() };
   // Passing port 0 to server assigns a random port
   server = await makeAuthServer(0, db);
@@ -29,6 +37,7 @@ afterEach(done => {
   err = null;
   rootUrl = null;
   server.close(done);
+  jest.clearAllMocks();
 });
 
 test('listens on given port', () => {
@@ -129,8 +138,34 @@ describe('session', () => {
     });
 
     describe('GET', () => {
-      it.todo('returns username for valid cookie');
-      it.todo('returns error for expired cookie');
+      it('returns username for valid cookie', async () => {
+        const body = { username: 'foo', password: 'bar' };
+        const signup = await axios.post(`${rootUrl}/session/signup`, body);
+        const cookie = getCookie(signup);
+
+        const options = { headers: { cookie } };
+        const res = await axios.get(`${rootUrl}/session/login`, options);
+        expect(res.data.user.username).toBe(body.username);
+      });
+
+      it('returns error for expired cookie', done => {
+        getTokenExp.mockReturnValue(ONE_HOUR_IN_SECONDS * -1);
+
+        server.close(async () => {
+          server = await makeAuthServer(0, db);
+          const { port } = server.address();
+          rootUrl = getRootUrl(port);
+
+          const body = { username: 'foo', password: 'bar' };
+          const signup = await axios.post(`${rootUrl}/session/signup`, body);
+          const cookie = getCookie(signup);
+
+          const options = { headers: { cookie } };
+          await axios.get(`${rootUrl}/session/login`, options).catch(setError);
+          expect(err.response.data.message).toMatch(/expired/i);
+          done();
+        });
+      });
     });
   });
 

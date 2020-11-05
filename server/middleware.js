@@ -46,7 +46,12 @@ const makeError = (status = 403, message = 'Unauthorized!') => {
 };
 
 const sessionMiddleware = async (req, res, next) => {
-  // req.session.id is set from cookie in expressSession
+  // req.session is set from cookie in expressSession
+
+  if (req.session.cookie._expires < new Date()) {
+    return next(makeError(403, 'Cookie is expired'));
+  }
+
   req.sessionStore.get(req.session.id, async (err, session) => {
     if (err) return next(err);
     if (!session) return next(makeError());

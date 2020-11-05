@@ -72,6 +72,10 @@ router.post('/login', async (req, res, next) => {
   });
 });
 
+router.get('/login', sessionMiddleware, (req, res) => {
+  return res.json({ user: req.user });
+});
+
 router.post('/secure', sessionMiddleware, async (req, res) => {
   return res.json({ message: `Hello from session auth, ${req.user.username}!` });
 });
