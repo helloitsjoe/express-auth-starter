@@ -32,7 +32,8 @@ const queryReducer = (s, a) => {
     case 'logout':
       return { ...s, status: 'LOADING', errorMessage: '' };
     case 'logout_success':
-      return { ...s, status: 'IDLE', data: null, fetchFn: s.fetchFn };
+    case 'login_expired':
+      return { ...s, status: 'IDLE', data: null };
     case 'toggle_form': {
       const fetchFn = s.fetchFn === login ? signUp : login;
       const buttonText = s.buttonText === 'Log In' ? 'Sign Up' : 'Log In';
@@ -74,14 +75,12 @@ const Form = ({ id, endpoint }) => {
         authLogIn({ username, token });
       })
       .catch(err => {
+        // Don't check for expired here?
         console.log(`err:`, err);
-        if (err.message.match(/expired/i)) {
-          // TODO: Refresh token
-          console.log('Expired token, logging out...');
-        }
         authLogOut();
-        const { message } = (err.response && err.response.data) || err;
-        dispatch({ type: 'fetch_error', payload: message || err.response.status });
+        // TODO: Refresh token
+        console.log('Expired token, logging out...');
+        dispatch({ type: 'login_expired' });
       });
   }, [token, endpoint]);
 
