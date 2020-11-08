@@ -2,11 +2,10 @@
 const bcrypt = require('bcrypt');
 const express = require('express');
 const { simpleTokenMiddleware } = require('../middleware');
-const { generateRandom, makeResponse, ONE_HOUR_IN_SECONDS } = require('../utils');
+const { generateRandom, makeResponse, getTokenExp } = require('../utils');
 
 const router = express.Router();
 
-const TOKEN_EXPIRATION = process.env.TOKEN_EXPIRATION || ONE_HOUR_IN_SECONDS;
 const SALT_ROUNDS = 1;
 
 const handleSignUp = async ({ username, password }, db) => {
@@ -23,7 +22,9 @@ const handleSignUp = async ({ username, password }, db) => {
 
   const hash = await bcrypt.hash(password, SALT_ROUNDS).catch(console.error);
   const token = generateRandom(50);
-  await users.insertOne({ username, hash, token, expires_in: TOKEN_EXPIRATION });
+
+  // Note: This will be a timestamp without a timezone. Better to use an ISO string.
+  await users.insertOne({ username, hash, token, expiration: Date.now() + getTokenExp() * 1000 });
 
   return makeResponse({ token });
 };
@@ -47,7 +48,7 @@ const handleLogin = async ({ username, password }, db) => {
   }
   const token = generateRandom(50);
   // TODO: Make expired error
-  await users.updateOne({ username }, { token, expires_in: TOKEN_EXPIRATION });
+  await users.updateOne({ username }, { token, expiration: Date.now() + getTokenExp() * 1000 });
   return makeResponse({ token });
 };
 

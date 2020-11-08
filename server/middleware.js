@@ -30,12 +30,19 @@ const simpleTokenMiddleware = async (req, res, next) => {
   const { users } = req.db;
   const token = authorization && authorization.split('Bearer ')[1];
   const user = await users.findOne({ token });
-  // TODO: if user.expires_in < new Date() return error
+
   if (!user) {
     const error = new Error('Unauthorized!');
     error.statusCode = 403;
-    next(error);
+    return next(error);
   }
+
+  if (user.expiration < Date.now()) {
+    const error = new Error('Token is expired');
+    error.statusCode = 403;
+    return next(error);
+  }
+
   req.user = user;
   next();
 };

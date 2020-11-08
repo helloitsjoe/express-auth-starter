@@ -4,6 +4,14 @@
 const axios = require('axios');
 const makeAuthServer = require('../makeAuthServer');
 const { makeTestDbApi } = require('../db');
+const { getTokenExp, ONE_HOUR_IN_SECONDS } = require('../utils');
+
+jest.mock('../utils', () => {
+  return {
+    ...jest.requireActual('../utils'),
+    getTokenExp: jest.fn(),
+  };
+});
 
 let db;
 let err;
@@ -16,6 +24,7 @@ const setError = e => {
 };
 
 beforeEach(async () => {
+  getTokenExp.mockReturnValue(ONE_HOUR_IN_SECONDS);
   db = { users: makeTestDbApi() };
   // Passing port 0 to server assigns a random port
   server = await makeAuthServer(0, db);
@@ -27,6 +36,7 @@ afterEach(done => {
   db = null;
   err = null;
   rootUrl = null;
+  jest.clearAllMocks();
   server.close(done);
 });
 
@@ -135,7 +145,17 @@ describe('simple-token', () => {
         expect(res.data.user.username).toBe(body.username);
       });
 
-      it.todo('returns error for expired token');
+      it('returns error for expired token', async () => {
+        getTokenExp.mockReturnValue(-60 * 60);
+        const body = { username: 'foo', password: 'bar' };
+        const signup = await axios.post(`${rootUrl}/simple-token/signup`, body);
+        const { token } = signup.data;
+
+        expect(token).toMatch(/\w+/);
+        const options = { headers: { Authorization: `Bearer ${token}` } };
+        await axios.get(`${rootUrl}/simple-token/login`, options).catch(setError);
+        expect(err.response.data.message).toMatch(/expired/i);
+      });
     });
   });
 
