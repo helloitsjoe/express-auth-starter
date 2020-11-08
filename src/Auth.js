@@ -70,14 +70,18 @@ const Form = ({ id, endpoint }) => {
 
     checkLoggedIn({ endpoint, token })
       .then(res => {
+        console.log(`res.data:`, res.data);
         const { username } = res.data.user;
         console.log(`username:`, username);
         authLogIn({ username, token });
       })
       .catch(err => {
-        // Don't check for expired here?
         console.log(`err:`, err);
         authLogOut();
+        const { message } = (err.response && err.response.data) || err;
+        if (!message.match(/expired/i)) {
+          return dispatch({ type: 'fetch_error', payload: message || err.response.status });
+        }
         // TODO: Refresh token
         console.log('Expired token, logging out...');
         dispatch({ type: 'login_expired' });

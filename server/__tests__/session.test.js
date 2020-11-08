@@ -138,7 +138,7 @@ describe('session', () => {
     });
 
     describe('GET', () => {
-      it('returns username for valid cookie', async () => {
+      fit('returns username for valid cookie', async () => {
         const body = { username: 'foo', password: 'bar' };
         const signup = await axios.post(`${rootUrl}/session/signup`, body);
         const cookie = getCookie(signup);
@@ -148,7 +148,7 @@ describe('session', () => {
         expect(res.data.user.username).toBe(body.username);
       });
 
-      it('returns error for expired cookie', done => {
+      fit('returns error for expired cookie', done => {
         getTokenExp.mockReturnValue(ONE_HOUR_IN_SECONDS * -1);
 
         server.close(async () => {
