@@ -1,14 +1,35 @@
 /* eslint-disable react/prop-types */
 
-import React, { useEffect, useRef } from 'react';
-import { login, sendSecure, signUp, logOut, checkLoggedIn } from './services';
+import * as React from 'react';
+import {
+  login,
+  sendSecure,
+  signUp,
+  logOut,
+  checkLoggedIn,
+  Login,
+  Endpoint,
+  Token,
+} from './services';
 import { withAuthProvider, useAuth } from './AuthContext';
+import { AxiosResponse } from 'axios';
 
-const useForm = initialValues => {
+const { useEffect, useRef } = React;
+
+interface FormLogin {
+  username: string;
+  password: string;
+}
+
+interface FormMessage {
+  message: string;
+}
+
+const useForm = <P extends object>(initialValues: P) => {
   const [values, setValues] = React.useState(initialValues);
 
-  const handleChange = e => {
-    const { name, value } = e.target;
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target as HTMLInputElement;
     setValues(prev => ({ ...prev, [name]: value }));
   };
 
@@ -19,7 +40,24 @@ const useForm = initialValues => {
   return { handleChange, handleResetForm, values };
 };
 
-const queryReducer = (s, a) => {
+interface ReducerState {
+  // TODO: enum
+  status: string;
+  errorMessage: string;
+  // REMOVE_ANY
+  fetchFn: (input: Endpoint & Login & Token) => Promise<AxiosResponse>;
+  // REMOVE_ANY
+  data: any;
+  buttonText: string;
+}
+
+interface Action {
+  type: string;
+  // REMOVE_ANY
+  payload?: string | any;
+}
+
+const queryReducer = (s: ReducerState, a: Action): ReducerState => {
   switch (a.type) {
     case 'fetch':
       return { ...s, status: 'LOADING', errorMessage: '' };
@@ -56,12 +94,20 @@ const useFetch = () => {
   return { ...state, dispatch };
 };
 
-const Form = ({ id, endpoint }) => {
-  const { handleChange, handleResetForm, values } = useForm({ username: '', password: '' });
+interface FormProps {
+  id: string;
+  endpoint: string;
+}
+
+const Form: React.FC<FormProps> = ({ id, endpoint }) => {
+  const { handleChange, handleResetForm, values } = useForm<FormLogin>({
+    username: '',
+    password: '',
+  });
   const { authLogIn, authLogOut, isLoggedIn, token } = useAuth();
   const { status, data, errorMessage, dispatch, fetchFn, buttonText } = useFetch();
 
-  const passwordRef = useRef();
+  const passwordRef = useRef<HTMLInputElement | null>(null);
 
   const isLoading = status === 'LOADING';
 
@@ -88,7 +134,7 @@ const Form = ({ id, endpoint }) => {
       });
   }, [token, endpoint]);
 
-  const handleSubmit = e => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const { username, password } = values;
 
@@ -107,7 +153,7 @@ const Form = ({ id, endpoint }) => {
       });
   };
 
-  const handleLogOut = e => {
+  const handleLogOut = (e: React.FormEvent) => {
     e.preventDefault();
     dispatch({ type: 'logout' });
 
@@ -159,7 +205,7 @@ const Form = ({ id, endpoint }) => {
                 type="button"
                 style={{ border: 'none', background: 'none', textDecoration: 'underline' }}
                 onClick={() => {
-                  passwordRef.current.focus();
+                  passwordRef.current && passwordRef.current.focus();
                   dispatch({ type: 'toggle_form' });
                 }}
               >
@@ -177,14 +223,15 @@ const Form = ({ id, endpoint }) => {
 };
 
 // MAYBE: Move this and Form into single component so useFetch works for both?
-const SendMessage = ({ id, endpoint }) => {
-  const { handleChange, values } = useForm({ secureMessage: '' });
+const SendMessage: React.FC<FormProps> = ({ id, endpoint }) => {
+  // TODO: secureMessage or message?
+  const { handleChange, values } = useForm<FormMessage>({ message: '' });
   const { status, data, errorMessage, dispatch } = useFetch();
   const { token, isLoggedIn } = useAuth();
 
   const isLoading = status === 'LOADING';
 
-  const handleSubmit = e => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const { message } = values;
 
@@ -203,9 +250,9 @@ const SendMessage = ({ id, endpoint }) => {
     <form onSubmit={handleSubmit}>
       <input
         placeholder="Send a message"
-        name="secureMessage"
+        name="message"
         data-testid={`${id}-input`}
-        value={values.secureMessage}
+        value={values.message}
         onChange={handleChange}
       />
       <button data-testid={`${id}-submit`} type="submit" disabled={isLoading}>
@@ -218,8 +265,13 @@ const SendMessage = ({ id, endpoint }) => {
   );
 };
 
+interface AuthProps {
+  endpoint: string;
+  title: string;
+}
+
 // TODO: Change endpoint to id
-const Auth = ({ endpoint, title }) => {
+const Auth: React.FC<AuthProps> = ({ endpoint, title }) => {
   const id = endpoint.slice(1);
   const { isLoggedIn, username } = useAuth();
 

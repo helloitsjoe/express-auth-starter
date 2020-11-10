@@ -1,12 +1,17 @@
 /* eslint-disable react/prop-types */
-import React from 'react';
+import * as React from 'react';
 import { oauth, updateSecureData } from './services';
 
-const OAuth = ({ title }) => {
-  const [secureData, setSecureData] = React.useState();
+interface Props {
+  title: string;
+}
+
+const OAuth = ({ title }: Props) => {
+  // REMOVE_ANY
+  const [secureData, setSecureData] = React.useState<any>();
   const [errorMessage, setErrorMessage] = React.useState('');
   const [message, setMessage] = React.useState('');
-  const [authToken, setAuthToken] = React.useState();
+  const [authToken, setAuthToken] = React.useState('');
 
   const handleOauth = () => {
     setErrorMessage('');
@@ -15,12 +20,12 @@ const OAuth = ({ title }) => {
         setAuthToken(token);
       })
       .catch(err => {
-        setAuthToken(null);
+        setAuthToken('');
         setErrorMessage(err.message);
       });
   };
 
-  const handleSendSecure = e => {
+  const handleSendSecure = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErrorMessage('');
     return updateSecureData(message, authToken)
@@ -51,7 +56,7 @@ const OAuth = ({ title }) => {
           onChange={e => setMessage(e.target.value)}
           value={message}
         />
-        <button type="button" onClick={() => setAuthToken(null)}>
+        <button type="button" onClick={() => setAuthToken('')}>
           Log out
         </button>
         <button type="submit">Send OAuth message</button>
