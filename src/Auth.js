@@ -86,7 +86,7 @@ const Form = ({ id, endpoint }) => {
         console.log('Expired token, logging out...');
         dispatch({ type: 'login_expired' });
       });
-  }, [token, endpoint]);
+  }, [token, endpoint]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSubmit = e => {
     e.preventDefault();
@@ -178,7 +178,7 @@ const Form = ({ id, endpoint }) => {
 
 // MAYBE: Move this and Form into single component so useFetch works for both?
 const SendMessage = ({ id, endpoint }) => {
-  const { handleChange, values } = useForm({ secureMessage: '' });
+  const { handleChange, values } = useForm({ message: '' });
   const { status, data, errorMessage, dispatch } = useFetch();
   const { token, isLoggedIn } = useAuth();
 
@@ -203,9 +203,9 @@ const SendMessage = ({ id, endpoint }) => {
     <form onSubmit={handleSubmit}>
       <input
         placeholder="Send a message"
-        name="secureMessage"
+        name="message"
         data-testid={`${id}-input`}
-        value={values.secureMessage}
+        value={values.message}
         onChange={handleChange}
       />
       <button data-testid={`${id}-submit`} type="submit" disabled={isLoading}>

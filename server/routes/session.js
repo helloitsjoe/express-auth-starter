@@ -40,6 +40,7 @@ const handleLogin = async ({ username, password }, db) => {
   const user = await users.findOne({ username });
 
   if (!user) {
+    // TODO: Don't return messages like this to the client (insecure)
     return makeResponse({ message: `Username ${username} does not exist`, status: 401 });
   }
 
@@ -73,6 +74,7 @@ router.post('/login', async (req, res, next) => {
 });
 
 router.get('/login', sessionMiddleware, (req, res) => {
+  // TODO: Don't return the whole user object (insecure)
   return res.json({ user: req.user });
 });
 

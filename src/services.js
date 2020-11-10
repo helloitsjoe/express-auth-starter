@@ -68,7 +68,3 @@ export function updateSecureData(message, authorization) {
     return axios.post(getUrl('/oauth/secure', 3001), { message }, options);
   });
 }
-
-export function updateLikes() {
-  return fetch().then(res => res.json());
-}
