@@ -1,15 +1,26 @@
-const express = require('express');
+import * as express from 'express';
 // const expressJWT = require('express-jwt');
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
-const { jwtMiddleware } = require('../middleware');
-const { getTokenExp, makeResponse } = require('../utils');
+import * as jwt from 'jsonwebtoken';
+import * as bcrypt from 'bcrypt';
+import { jwtMiddleware, DBContext, AuthRequest } from '../middleware';
+import { getTokenExp, makeResponse, AuthServerResponse } from '../utils';
+import { DB } from '../db';
 
 const router = express.Router();
 
 const SALT_ROUNDS = 1;
+const secret = process.env.JWT_SECRET || '';
 
-const handleSignUp = async ({ username, password }, users) => {
+interface RequestBody {
+  username: string;
+  password: string;
+}
+
+interface Handler {
+  (login: RequestBody, users: DB): Promise<AuthServerResponse>;
+}
+
+const handleSignUp: Handler = async ({ username, password }, users) => {
   if (!username || !password) {
     return makeResponse({ message: 'Username and password are both required.', status: 401 });
   }
@@ -23,11 +34,11 @@ const handleSignUp = async ({ username, password }, users) => {
   const hash = await bcrypt.hash(password, SALT_ROUNDS).catch(console.error);
   await users.insertOne({ username, hash });
 
-  const token = jwt.sign({ username }, process.env.JWT_SECRET, { expiresIn: getTokenExp() });
+  const token = jwt.sign({ username }, secret, { expiresIn: getTokenExp() });
   return makeResponse({ token });
 };
 
-const handleLogin = async ({ username, password }, users) => {
+const handleLogin: Handler = async ({ username, password }, users) => {
   if (!username || !password) {
     return makeResponse({ message: 'Username and password are both required.', status: 401 });
   }
@@ -43,7 +54,7 @@ const handleLogin = async ({ username, password }, users) => {
     return makeResponse({ message: `Wrong password for user ${username}`, status: 401 });
   }
 
-  const token = jwt.sign({ username }, process.env.JWT_SECRET, { expiresIn: getTokenExp() });
+  const token = jwt.sign({ username }, secret, { expiresIn: getTokenExp() });
   return makeResponse({ token });
 };
 
@@ -65,4 +76,4 @@ router.post('/secure', jwtMiddleware, (req, res) => {
   return res.json({ message: `Hi from JWT, ${req.user.username}!` });
 });
 
-module.exports = router;
+export default router;

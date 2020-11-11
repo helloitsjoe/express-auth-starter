@@ -1,17 +1,18 @@
-const express = require('express');
-const path = require('path');
-const http = require('http');
-const cors = require('cors');
-const bodyParser = require('body-parser');
-const expressSession = require('express-session');
-const oauth = require('./routes/oauth');
-const session = require('./routes/session');
-const simpleToken = require('./routes/simpleToken');
-const jwt = require('./routes/jwt');
-const { makeDbMiddleware, errorMiddleware } = require('./middleware');
-const { getTokenExp } = require('./utils');
+import * as express from 'express';
+import * as path from 'path';
+import * as http from 'http';
+import * as cors from 'cors';
+import * as bodyParser from 'body-parser';
+import * as expressSession from 'express-session';
+import jwt from './routes/jwt';
+import oauth from './routes/oauth';
+import session from './routes/session';
+import simpleToken from './routes/simpleToken';
+import { makeDbMiddleware, errorMiddleware, DBContext } from './middleware';
+import { DB } from './db';
+import { getTokenExp } from './utils';
 
-const makeAuthServer = async (port = 3001, db) => {
+const makeAuthServer = async (port = 3001, db: DBContext) => {
   const app = express();
   const server = http.createServer(app);
 
@@ -22,7 +23,7 @@ const makeAuthServer = async (port = 3001, db) => {
   app.use(bodyParser.json());
   app.use(
     expressSession({
-      secret: process.env.EXPRESS_SESSION_SECRET,
+      secret: process.env.EXPRESS_SESSION_SECRET || '',
       resave: false,
       saveUninitialized: true,
       cookie: {
@@ -52,4 +53,4 @@ const makeAuthServer = async (port = 3001, db) => {
   });
 };
 
-module.exports = makeAuthServer;
+export default makeAuthServer;

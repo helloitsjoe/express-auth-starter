@@ -1,10 +1,21 @@
 /* eslint-disable camelcase */
 require('dotenv').config();
-const { MongoClient } = require('mongodb');
-const { Client } = require('pg');
+import { Collection, MongoClient } from 'mongodb';
+import { Client } from 'pg';
 
-const makeTestDbApi = () => {
-  let mockDb = [];
+export interface DB {
+  // insertOne: Function;
+  // findOne: Function;
+  insertOne = data => collection.insertOne(data);
+  findOne = query => collection.findOne(query);
+  updateOne = (query, update) => collection.updateOne(query, { $set: update });
+  deleteOne = query => collection.deleteOne(query);
+  clearAll = () => collection.deleteMany({});
+  closeConnection = () => client.close();
+}
+
+export const makeTestDbApi = (): DB => {
+  let mockDb: { [key: string]: string }[] = [];
 
   const insertOne = data => {
     mockDb.push(data);
@@ -46,7 +57,7 @@ const makeTestDbApi = () => {
   return { insertOne, findOne, updateOne, deleteOne, clearAll, closeConnection };
 };
 
-const makeMongoApi = (client, collection) => {
+export const makeMongoApi = (client: MongoClient, collection: Collection) => {
   const insertOne = data => collection.insertOne(data);
   const findOne = query => collection.findOne(query);
   const updateOne = (query, update) => collection.updateOne(query, { $set: update });
@@ -57,7 +68,7 @@ const makeMongoApi = (client, collection) => {
   return { insertOne, findOne, updateOne, deleteOne, clearAll, closeConnection };
 };
 
-const makePgApi = client => {
+export const makePgApi = (client): DB => {
   const insertOne = async ({ username, hash, token, expiration }) => {
     const query =
       'INSERT INTO users(username, hash, token, expiration) VALUES($1, $2, $3, $4) RETURNING *';
@@ -93,9 +104,9 @@ const makePgApi = client => {
   return { insertOne, findOne, updateOne, deleteOne, clearAll, closeConnection };
 };
 
-const makeCollection = connection => connection.db().collection('users');
+export const makeCollection = (connection: MongoClient) => connection.db().collection('users');
 
-const makeTable = async client => {
+export const makeTable = async (client: Client) => {
   await client.query(
     `
     CREATE TABLE IF NOT EXISTS users (
@@ -110,8 +121,8 @@ const makeTable = async client => {
   return client;
 };
 
-const makeMongoClient = async () => {
-  const dbUrl = process.env.MONGO_URL;
+export const makeMongoClient = async () => {
+  const dbUrl = process.env.MONGO_URL || '';
   const client = await MongoClient.connect(dbUrl, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
@@ -122,7 +133,7 @@ const makeMongoClient = async () => {
   return makeMongoApi(client, collection);
 };
 
-const makePgClient = async () => {
+export const makePgClient = async () => {
   const { PGUSER, PGPASSWORD, PGDATABASE, PGHOST } = process.env;
   const url = `postgres://${PGUSER}:${PGPASSWORD}@${PGHOST}:5432/${PGDATABASE}`;
   const client = new Client({ connectionString: url });
@@ -139,7 +150,7 @@ const makePgClient = async () => {
   return makePgApi(clientWithTable);
 };
 
-const validateDbApi = apiToTest => {
+export const validateDbApi = (apiToTest: DB) => {
   const apiToOverride = [
     'updateOne',
     'findOne',
@@ -154,13 +165,4 @@ const validateDbApi = apiToTest => {
     }
   });
   return apiToTest;
-};
-
-module.exports = {
-  makeMongoClient,
-  makePgClient,
-  makeMongoApi,
-  makePgApi,
-  makeTestDbApi,
-  validateDbApi,
 };

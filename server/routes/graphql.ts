@@ -23,4 +23,4 @@ const router = express.Router();
 router.post('/', gql);
 router.get('/', gql);
 
-module.exports = router;
+export default router;

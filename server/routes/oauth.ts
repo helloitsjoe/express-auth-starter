@@ -1,8 +1,8 @@
 // This example is based on http://thecodebarbarian.com/oauth-with-node-js-and-express.html
 // const fs = require('fs');
-const path = require('path');
-const express = require('express');
-const { generateRandom, ONE_DAY_IN_SECONDS } = require('../utils');
+import * as path from 'path';
+import * as express from 'express';
+import { generateRandom, getTokenExp } from '../utils';
 
 // TODO: Do this in DB
 const authCodes = new Set();
@@ -41,7 +41,7 @@ router.post('/token', (req, res) => {
     accessTokens.add(token);
 
     // Where do we set this to expire?
-    return res.json({ access_token: token, expires_in: ONE_DAY_IN_SECONDS });
+    return res.json({ access_token: token, expires_in: getTokenExp() });
   }
   return res.status(400).json({ message: 'Invalid auth token' });
 });
@@ -57,3 +57,4 @@ router.post('/secure', (req, res) => {
 });
 
 module.exports = router;
+export default router;

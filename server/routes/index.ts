@@ -6,4 +6,4 @@ router.get('/', (req, res) => {
   res.render('index', { title: 'Express Auth Example' });
 });
 
-module.exports = router;
+export default router;

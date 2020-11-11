@@ -1,9 +1,9 @@
-const express = require('express');
-const path = require('path');
-const http = require('http');
-const cors = require('cors');
-const bodyParser = require('body-parser');
-const graphql = require('./routes/graphql');
+import * as express from 'express';
+import * as path from 'path';
+import * as http from 'http';
+import * as cors from 'cors';
+import * as bodyParser from 'body-parser';
+import graphql from './routes/graphql';
 
 const app = express();
 const server = http.createServer(app);
@@ -32,4 +32,4 @@ const makeServer = async (port = 3000) => {
   });
 };
 
-module.exports = makeServer;
+export default makeServer;

@@ -1,6 +1,6 @@
-const makeServer = require('./makeServer');
-const makeAuthServer = require('./makeAuthServer');
-const { makePgClient, makeMongoClient } = require('./db');
+import makeServer from './makeServer';
+import makeAuthServer from './makeAuthServer';
+import { makePgClient, makeMongoClient } from './db';
 
 makePgClient()
   // makeMongoClient()

@@ -1,11 +1,12 @@
 /* eslint-disable camelcase */
-const bcrypt = require('bcrypt');
-const express = require('express');
-const { simpleTokenMiddleware } = require('../middleware');
-const { generateRandom, makeResponse, getTokenExp } = require('../utils');
+import * as bcrypt from 'bcrypt';
+import * as express from 'express';
+import { sessionMiddleware } from '../middleware';
+import { generateRandom, makeResponse, ONE_HOUR_IN_SECONDS } from '../utils';
 
 const router = express.Router();
 
+const TOKEN_EXPIRATION = process.env.TOKEN_EXPIRATION || ONE_HOUR_IN_SECONDS;
 const SALT_ROUNDS = 1;
 
 const handleSignUp = async ({ username, password }, db) => {
@@ -23,8 +24,9 @@ const handleSignUp = async ({ username, password }, db) => {
   const hash = await bcrypt.hash(password, SALT_ROUNDS).catch(console.error);
   const token = generateRandom(50);
 
-  // Note: This will be a timestamp without a timezone. Better to use an ISO string.
-  await users.insertOne({ username, hash, token, expiration: Date.now() + getTokenExp() * 1000 });
+  await users.insertOne({ username, hash, token, expires_in: TOKEN_EXPIRATION });
+
+  // const session = { user };
 
   return makeResponse({ token });
 };
@@ -48,45 +50,45 @@ const handleLogin = async ({ username, password }, db) => {
   }
   const token = generateRandom(50);
   // TODO: Make expired error
-  await users.updateOne({ username }, { token, expiration: Date.now() + getTokenExp() * 1000 });
+  await users.updateOne({ username }, { token, expires_in: TOKEN_EXPIRATION });
   return makeResponse({ token });
 };
 
-router.post('/signup', async (req, res) => {
+router.post('/signup', async (req, res, next) => {
   const { status, ...rest } = await handleSignUp(req.body, req.db);
-  res.status(status).json(rest);
+  req.session.user = rest.token;
+  req.sessionStore.set(req.session.id, req.session, err => {
+    if (err) next(err);
+    res.status(status).json(rest);
+  });
 });
 
-router.post('/login', async (req, res) => {
+router.post('/login', async (req, res, next) => {
   const { status, ...rest } = await handleLogin(req.body, req.db);
-  res.status(status).json(rest);
+  req.session.user = rest.token;
+  req.sessionStore.set(req.session.id, req.session, err => {
+    if (err) next(err);
+    res.status(status).json(rest);
+  });
 });
 
-router.get('/login', simpleTokenMiddleware, (req, res) => {
-  res.json({ user: req.user });
+router.get('/login', sessionMiddleware, (req, res) => {
+  return res.json({ user: req.user });
 });
 
-router.post('/secure', simpleTokenMiddleware, async (req, res) => {
-  // TODO: check expiration
-  return res.json({ message: `Hello from simple-token auth, ${req.user.username}!` });
+router.post('/secure', sessionMiddleware, async (req, res) => {
+  return res.json({ message: `Hello from session auth, ${req.user.username}!` });
 });
 
 router.post('/logout', async (req, res) => {
   // TODO: admin auth
-  const { users } = req.db;
-  const { token } = req.body;
+  const { cookie } = req.headers;
+  if (!cookie) return res.status(403).json({ message: 'No Session ID provided' });
 
-  const user = await users.findOne({ token });
-
-  if (!user) {
-    return res.status(404).json({ message: 'Token not found!' });
-  }
-
-  const { username } = user;
-  await users.updateOne({ username }, { token: null, expires_in: null });
-  // const userAfter = await users.findOne({ token });
-
-  return res.json({ token });
+  req.sessionStore.destroy(req.session.id, err => {
+    if (err) return res.status(500).json({ message: err.message });
+    return res.json({ message: 'You have been logged out' });
+  });
 });
 
-module.exports = router;
+export default router;
