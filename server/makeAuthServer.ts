@@ -8,8 +8,8 @@ import jwt from './routes/jwt';
 import oauth from './routes/oauth';
 import session from './routes/session';
 import simpleToken from './routes/simpleToken';
-import { makeDbMiddleware, errorMiddleware, DBContext } from './middleware';
-import { DB } from './db';
+import { makeDbMiddleware, errorMiddleware } from './middleware';
+import { DBContext } from './types';
 import { getTokenExp } from './utils';
 
 const makeAuthServer = async (port = 3001, db: DBContext) => {
@@ -17,7 +17,7 @@ const makeAuthServer = async (port = 3001, db: DBContext) => {
   const server = http.createServer(app);
 
   // HTML and API need to live on the same port for session auth, haven't
-  // figured out how to get cross-domain cookies working.
+  // figured out how to get cross-domain cookies working yet.
   app.use(express.static(path.join(__dirname, '../public')));
   app.use(cors());
   app.use(bodyParser.json());
@@ -47,7 +47,7 @@ const makeAuthServer = async (port = 3001, db: DBContext) => {
     });
 
     server.listen(port, () => {
-      console.log(`Auth Server listening on http://localhost:${server.address().port}`);
+      console.log(`Auth Server listening on http://localhost:${port}`);
       return resolve(server);
     });
   });

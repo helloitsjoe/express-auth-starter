@@ -1,32 +1,6 @@
 import { Request, Response, RequestHandler, ErrorRequestHandler } from 'express';
-import * as expressSession from 'express-session';
 import * as jwt from 'jsonwebtoken';
-import { DB } from './db';
-
-interface User {}
-export interface DBContext {
-  users: DB;
-}
-
-export interface AuthRequest extends Request {
-  db: DBContext;
-  user: User;
-}
-
-interface AuthError extends Error {
-  statusCode: number;
-}
-
-interface AuthHandler {
-  (req: AuthRequest, res: Response, next: (err?: Error) => void): void;
-}
-interface AuthErrorHandler {
-  (err: AuthError, req: AuthRequest, res: Response, next: (err?: Error) => void): void;
-}
-
-interface JWTBody {
-  username: string;
-}
+import { DBContext, AuthHandler, AuthError, JWTBody, AuthErrorHandler } from './types';
 
 export const makeDbMiddleware = (db: DBContext): AuthHandler => (req, res, next) => {
   req.db = db;
@@ -56,7 +30,7 @@ export const jwtMiddleware: AuthHandler = (req, res, next) => {
 export const simpleTokenMiddleware: AuthHandler = async (req, res, next) => {
   const { authorization } = req.headers;
   const { users } = req.db;
-  const token = authorization && authorization.split('Bearer ')[1];
+  const token = authorization ? authorization.split('Bearer ')[1] : '';
   const user = await users.findOne({ token });
 
   if (!user) {
@@ -65,7 +39,7 @@ export const simpleTokenMiddleware: AuthHandler = async (req, res, next) => {
     return next(error);
   }
 
-  if (user.expiration < Date.now()) {
+  if (user.expiration! < Date.now()) {
     const error = new Error('Token is expired') as AuthError;
     error.statusCode = 403;
     return next(error);
@@ -99,7 +73,7 @@ export const sessionMiddleware: AuthHandler = async (req, res, next) => {
 };
 
 // eslint-disable-next-line no-unused-vars
-export const errorMiddleware: AuthErrorHandler = (err: AuthError, req, res, next) => {
+export const errorMiddleware: AuthErrorHandler = (err, req, res, next) => {
   if (process.env.NODE_ENV !== 'test') {
     console.error(err);
   }

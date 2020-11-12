@@ -3,21 +3,23 @@ require('dotenv').config();
 import { Collection, MongoClient } from 'mongodb';
 import { Client } from 'pg';
 
+type QueryKey = 'username' | 'token';
+
 interface Data {
   username: string;
   hash: string;
-  token: string;
-  expiration: string;
+  token?: string;
+  expiration?: number;
 }
 
 interface Query {
-  username: string;
-  token: string;
+  username?: string;
+  token?: string;
 }
 
 interface Update {
   token: string;
-  expiration: string;
+  expiration?: number;
 }
 
 export interface DB {
@@ -40,13 +42,13 @@ export const makeTestDbApi = (): DB => {
 
   const findOne = (query: Query) => {
     // TODO: Match more than the first key
-    const key = Object.keys(query)[0];
+    const key = Object.keys(query)[0] as QueryKey;
     const found = mockDb.find(entry => entry[key] === query[key]) || null;
     return Promise.resolve(found);
   };
 
   const updateOne = async (query: Query, update: Update) => {
-    const key = Object.keys(query)[0];
+    const key = Object.keys(query)[0] as QueryKey;
     // eslint-disable-next-line no-restricted-syntax
     for (const [i, entry] of mockDb.entries()) {
       if (entry[key] === query[key]) {
@@ -59,7 +61,7 @@ export const makeTestDbApi = (): DB => {
   };
 
   const deleteOne = (query: Query) => {
-    const key = Object.keys(query)[0];
+    const key = Object.keys(query)[0] as QueryKey;
     mockDb = mockDb.filter(entry => entry[key] !== query[key]);
     return Promise.resolve({ deletedCount: 1 });
   };
@@ -74,18 +76,18 @@ export const makeTestDbApi = (): DB => {
 };
 
 export const makeMongoApi = (client: MongoClient, collection: Collection): DB => {
-  const insertOne = data => collection.insertOne(data);
-  const findOne = query => collection.findOne(query);
-  const updateOne = (query, update) => collection.updateOne(query, { $set: update });
-  const deleteOne = query => collection.deleteOne(query);
-  const clearAll = () => collection.deleteMany({});
+  const insertOne = (data: Data) => collection.insertOne(data).then(() => data);
+  const findOne = (query: Query) => collection.findOne(query);
+  const updateOne = (query: Query, update: Update) => collection.updateOne(query, { $set: update });
+  const deleteOne = (query: Query) => collection.deleteOne(query);
+  const clearAll = () => collection.deleteMany({}).then(() => {});
   const closeConnection = () => client.close();
 
   return { insertOne, findOne, updateOne, deleteOne, clearAll, closeConnection };
 };
 
-export const makePgApi = (client): DB => {
-  const insertOne = async ({ username, hash, token, expiration }) => {
+export const makePgApi = (client: Client): DB => {
+  const insertOne = async ({ username, hash, token, expiration }: Data) => {
     const query =
       'INSERT INTO users(username, hash, token, expiration) VALUES($1, $2, $3, $4) RETURNING *';
     const values = [username, hash, token, expiration];
@@ -93,7 +95,7 @@ export const makePgApi = (client): DB => {
     return users.rows[0];
   };
 
-  const findOne = async ({ username, token }) => {
+  const findOne = async ({ username, token }: Query) => {
     // TODO: make this cleaner
     const query = username ? 'username' : 'token';
     const users = await client.query(`SELECT * FROM users WHERE ${query} = $1`, [
@@ -102,7 +104,7 @@ export const makePgApi = (client): DB => {
     return users.rows[0] || null;
   };
 
-  const updateOne = async ({ username }, { token, expiration }) => {
+  const updateOne = async ({ username }: Query, { token, expiration }: Update) => {
     const updateQuery =
       'UPDATE users SET (token, expiration) = ($1, $2) WHERE username = $3 RETURNING *';
     const values = [token, expiration, username];
@@ -110,11 +112,12 @@ export const makePgApi = (client): DB => {
     return { modifiedCount: users.rows.length };
   };
 
-  const deleteOne = async ({ username }) => {
-    await client.query('DELETE FROM users WHERE username = $1', [username]);
+  const deleteOne = async ({ username }: Query) => {
+    const users = await client.query('DELETE FROM users WHERE username = $1', [username]);
+    return { deletedCount: users.rows.length };
   };
 
-  const clearAll = async () => client.query('TRUNCATE users');
+  const clearAll = async () => client.query('TRUNCATE users').then(() => {});
   const closeConnection = () => client.end();
 
   return { insertOne, findOne, updateOne, deleteOne, clearAll, closeConnection };
@@ -166,19 +169,19 @@ export const makePgClient = async () => {
   return makePgApi(clientWithTable);
 };
 
-export const validateDbApi = (apiToTest: DB) => {
-  const apiToOverride = [
-    'updateOne',
-    'findOne',
-    'insertOne',
-    'deleteOne',
-    'clearAll',
-    'closeConnection',
-  ];
-  apiToOverride.forEach(methodName => {
-    if (typeof apiToTest[methodName] !== 'function') {
-      throw new Error(`Function ${methodName} must be defined`);
-    }
-  });
-  return apiToTest;
-};
+// export const validateDbApi = (apiToTest: DB) => {
+//   const apiToOverride = [
+//     'updateOne',
+//     'findOne',
+//     'insertOne',
+//     'deleteOne',
+//     'clearAll',
+//     'closeConnection',
+//   ];
+//   apiToOverride.forEach(methodName => {
+//     if (typeof apiToTest[methodName] !== 'function') {
+//       throw new Error(`Function ${methodName} must be defined`);
+//     }
+//   });
+//   return apiToTest;
+// };

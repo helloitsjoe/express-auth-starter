@@ -2,23 +2,14 @@ import * as express from 'express';
 // const expressJWT = require('express-jwt');
 import * as jwt from 'jsonwebtoken';
 import * as bcrypt from 'bcrypt';
-import { jwtMiddleware, DBContext, AuthRequest } from '../middleware';
-import { getTokenExp, makeResponse, AuthServerResponse } from '../utils';
-import { DB } from '../db';
+import { jwtMiddleware } from '../middleware';
+import { getTokenExp, makeResponse } from '../utils';
+import { Handler } from '../types';
 
 const router = express.Router();
 
 const SALT_ROUNDS = 1;
 const secret = process.env.JWT_SECRET || '';
-
-interface RequestBody {
-  username: string;
-  password: string;
-}
-
-interface Handler {
-  (login: RequestBody, users: DB): Promise<AuthServerResponse>;
-}
 
 const handleSignUp: Handler = async ({ username, password }, users) => {
   if (!username || !password) {
@@ -31,7 +22,7 @@ const handleSignUp: Handler = async ({ username, password }, users) => {
     return makeResponse({ message: `Username ${username} is unavailable!`, status: 400 });
   }
 
-  const hash = await bcrypt.hash(password, SALT_ROUNDS).catch(console.error);
+  const hash = (await bcrypt.hash(password, SALT_ROUNDS).catch(console.error)) || '';
   await users.insertOne({ username, hash });
 
   const token = jwt.sign({ username }, secret, { expiresIn: getTokenExp() });

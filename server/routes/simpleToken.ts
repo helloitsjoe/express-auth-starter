@@ -3,13 +3,13 @@ import * as bcrypt from 'bcrypt';
 import * as express from 'express';
 import { simpleTokenMiddleware } from '../middleware';
 import { generateRandom, makeResponse, getTokenExp } from '../utils';
+import { Handler } from '../types';
 
 const router = express.Router();
 
 const SALT_ROUNDS = 1;
 
-const handleSignUp = async ({ username, password }, db) => {
-  const { users } = db;
+const handleSignUp: Handler = async ({ username, password }, users) => {
   if (!username || !password) {
     return makeResponse({ message: 'Username and password are both required.', status: 401 });
   }
@@ -20,7 +20,7 @@ const handleSignUp = async ({ username, password }, db) => {
     return makeResponse({ message: 'Username already exists', status: 401 });
   }
 
-  const hash = await bcrypt.hash(password, SALT_ROUNDS).catch(console.error);
+  const hash = (await bcrypt.hash(password, SALT_ROUNDS).catch(console.error)) || '';
   const token = generateRandom(50);
 
   // Note: This will be a timestamp without a timezone. Better to use an ISO string.
@@ -29,8 +29,7 @@ const handleSignUp = async ({ username, password }, db) => {
   return makeResponse({ token });
 };
 
-const handleLogin = async ({ username, password }, db) => {
-  const { users } = db;
+const handleLogin: Handler = async ({ username, password }, users) => {
   if (!username || !password) {
     return makeResponse({ message: 'Username and password are both required.', status: 401 });
   }
@@ -53,12 +52,12 @@ const handleLogin = async ({ username, password }, db) => {
 };
 
 router.post('/signup', async (req, res) => {
-  const { status, ...rest } = await handleSignUp(req.body, req.db);
+  const { status, ...rest } = await handleSignUp(req.body, req.db.users);
   res.status(status).json(rest);
 });
 
 router.post('/login', async (req, res) => {
-  const { status, ...rest } = await handleLogin(req.body, req.db);
+  const { status, ...rest } = await handleLogin(req.body, req.db.users);
   res.status(status).json(rest);
 });
 

@@ -1,16 +1,15 @@
-/* eslint-disable camelcase */
 import * as bcrypt from 'bcrypt';
 import * as express from 'express';
 import { sessionMiddleware } from '../middleware';
-import { generateRandom, makeResponse, ONE_HOUR_IN_SECONDS } from '../utils';
+import { generateRandom, makeResponse } from '../utils';
+import { Handler } from '../types';
+import { DB } from '../db';
 
 const router = express.Router();
 
-const TOKEN_EXPIRATION = process.env.TOKEN_EXPIRATION || ONE_HOUR_IN_SECONDS;
 const SALT_ROUNDS = 1;
 
-const handleSignUp = async ({ username, password }, db) => {
-  const { users } = db;
+const handleSignUp: Handler = async ({ username, password }, users: DB) => {
   if (!username || !password) {
     return makeResponse({ message: 'Username and password are both required.', status: 401 });
   }
@@ -21,18 +20,17 @@ const handleSignUp = async ({ username, password }, db) => {
     return makeResponse({ message: 'Username already exists', status: 401 });
   }
 
-  const hash = await bcrypt.hash(password, SALT_ROUNDS).catch(console.error);
+  const hash = (await bcrypt.hash(password, SALT_ROUNDS).catch(console.error)) || '';
   const token = generateRandom(50);
 
-  await users.insertOne({ username, hash, token, expires_in: TOKEN_EXPIRATION });
+  await users.insertOne({ username, hash, token });
 
   // const session = { user };
 
   return makeResponse({ token });
 };
 
-const handleLogin = async ({ username, password }, db) => {
-  const { users } = db;
+const handleLogin: Handler = async ({ username, password }, users) => {
   if (!username || !password) {
     return makeResponse({ message: 'Username and password are both required.', status: 401 });
   }
@@ -49,13 +47,13 @@ const handleLogin = async ({ username, password }, db) => {
     return makeResponse({ message: 'Username and password do not match', status: 401 });
   }
   const token = generateRandom(50);
-  // TODO: Make expired error
-  await users.updateOne({ username }, { token, expires_in: TOKEN_EXPIRATION });
+
+  await users.updateOne({ username }, { token });
   return makeResponse({ token });
 };
 
 router.post('/signup', async (req, res, next) => {
-  const { status, ...rest } = await handleSignUp(req.body, req.db);
+  const { status, ...rest } = await handleSignUp(req.body, req.db.users);
   req.session.user = rest.token;
   req.sessionStore.set(req.session.id, req.session, err => {
     if (err) next(err);
@@ -64,7 +62,7 @@ router.post('/signup', async (req, res, next) => {
 });
 
 router.post('/login', async (req, res, next) => {
-  const { status, ...rest } = await handleLogin(req.body, req.db);
+  const { status, ...rest } = await handleLogin(req.body, req.db.users);
   req.session.user = rest.token;
   req.sessionStore.set(req.session.id, req.session, err => {
     if (err) next(err);

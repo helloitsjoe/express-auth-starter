@@ -2,9 +2,9 @@
  * @jest-environment node
  */
 const axios = require('axios');
-const makeAuthServer = require('../makeAuthServer');
-const { makeTestDbApi } = require('../db');
-const { getCookie, getTokenExp, ONE_HOUR_IN_SECONDS } = require('../utils');
+const makeAuthServer = require('../makeAuthServer.ts');
+const { makeTestDbApi } = require('../db.ts');
+const { getCookie, getTokenExp, ONE_HOUR_IN_SECONDS } = require('../utils.ts');
 
 jest.mock('../utils', () => {
   return {

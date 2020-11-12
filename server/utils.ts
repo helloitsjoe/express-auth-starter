@@ -1,5 +1,6 @@
 /* eslint-disable camelcase */
 import { AxiosResponse } from 'axios';
+import { AuthServerInput } from './types';
 const crypto = require('crypto');
 
 export const ONE_HOUR_IN_SECONDS = 60 * 60;
@@ -8,21 +9,13 @@ export const getTokenExp = (): number => {
   return Number(process.env.TOKEN_EXPIRATION) || ONE_HOUR_IN_SECONDS;
 };
 
-interface AuthInput {
-  message?: string;
-  token?: string;
-}
-
-export type AuthServerInput = AuthInput & { status?: number };
-export type AuthServerResponse = AuthInput & { status: number };
-
 export const makeResponse = ({ message, token, status = 200 }: AuthServerInput) => ({
   message,
   status,
   token,
 });
 
-export const generateRandom = (len: number) => {
+export const generateRandom = (len: number): string => {
   const rand = crypto
     .randomBytes(len)
     .toString('base64')
