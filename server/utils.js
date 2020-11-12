@@ -25,11 +25,8 @@ const generateRandom = len => {
 };
 
 const getCookie = res => {
-  // const KEY = 'connect.sid=s%3A';
-  // const sessionId = cookies.split('; ').find(cookie => cookie.startsWith(KEY));
-  // return sessionId && sessionId.replace(KEY, '').split('.')[0];
-  const [cookies] = res.headers['set-cookie'] || [];
-  return cookies;
+  const [cookie] = res.headers['set-cookie'] || [];
+  return cookie;
 };
 
 module.exports = {
