@@ -3,33 +3,49 @@ require('dotenv').config();
 import { Collection, MongoClient } from 'mongodb';
 import { Client } from 'pg';
 
+interface Data {
+  username: string;
+  hash: string;
+  token: string;
+  expiration: string;
+}
+
+interface Query {
+  username: string;
+  token: string;
+}
+
+interface Update {
+  token: string;
+  expiration: string;
+}
+
 export interface DB {
-  // insertOne: Function;
-  // findOne: Function;
-  insertOne = data => collection.insertOne(data);
-  findOne = query => collection.findOne(query);
-  updateOne = (query, update) => collection.updateOne(query, { $set: update });
-  deleteOne = query => collection.deleteOne(query);
-  clearAll = () => collection.deleteMany({});
-  closeConnection = () => client.close();
+  insertOne: (data: Data) => Promise<Data>;
+  findOne: (query: Query) => Promise<Data | null>;
+  // REMOVE_ANY
+  updateOne: (query: Query, update: Update) => Promise<object>;
+  deleteOne: (query: Query) => Promise<object>;
+  clearAll: () => Promise<void>;
+  closeConnection: () => Promise<void>;
 }
 
 export const makeTestDbApi = (): DB => {
-  let mockDb: { [key: string]: string }[] = [];
+  let mockDb: Data[] = [];
 
-  const insertOne = data => {
+  const insertOne = (data: Data) => {
     mockDb.push(data);
     return Promise.resolve(data);
   };
 
-  const findOne = query => {
+  const findOne = (query: Query) => {
     // TODO: Match more than the first key
     const key = Object.keys(query)[0];
     const found = mockDb.find(entry => entry[key] === query[key]) || null;
     return Promise.resolve(found);
   };
 
-  const updateOne = async (query, update) => {
+  const updateOne = async (query: Query, update: Update) => {
     const key = Object.keys(query)[0];
     // eslint-disable-next-line no-restricted-syntax
     for (const [i, entry] of mockDb.entries()) {
@@ -42,22 +58,22 @@ export const makeTestDbApi = (): DB => {
     return Promise.resolve({ modifiedCount: 0 });
   };
 
-  const deleteOne = query => {
+  const deleteOne = (query: Query) => {
     const key = Object.keys(query)[0];
     mockDb = mockDb.filter(entry => entry[key] !== query[key]);
     return Promise.resolve({ deletedCount: 1 });
   };
 
-  const clearAll = () => {
+  const clearAll = async () => {
     mockDb = [];
   };
 
-  const closeConnection = () => {};
+  const closeConnection = async () => {};
 
   return { insertOne, findOne, updateOne, deleteOne, clearAll, closeConnection };
 };
 
-export const makeMongoApi = (client: MongoClient, collection: Collection) => {
+export const makeMongoApi = (client: MongoClient, collection: Collection): DB => {
   const insertOne = data => collection.insertOne(data);
   const findOne = query => collection.findOne(query);
   const updateOne = (query, update) => collection.updateOne(query, { $set: update });
