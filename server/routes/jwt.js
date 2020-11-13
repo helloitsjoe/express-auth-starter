@@ -2,7 +2,6 @@ const express = require('express');
 // const expressJWT = require('express-jwt');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const { jwtMiddleware } = require('../middleware');
 const { getTokenExp, makeResponse } = require('../utils');
 
 const router = express.Router();
@@ -45,6 +44,26 @@ const handleLogin = async ({ username, password }, users) => {
 
   const token = jwt.sign({ username }, process.env.JWT_SECRET, { expiresIn: getTokenExp() });
   return makeResponse({ token });
+};
+
+const jwtMiddleware = (req, res, next) => {
+  const { authorization } = req.headers;
+  if (!authorization) {
+    const error = new Error('Authorization header is required');
+    error.statusCode = 403;
+    next(error);
+  }
+  try {
+    // JWT has build in expiration check
+    const token = authorization.split('Bearer ')[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = { username: decoded.username };
+    next();
+  } catch (err) {
+    err.statusCode = 403;
+    err.message = `Unauthorized! ${err.message}`;
+    next(err);
+  }
 };
 
 router.post('/signup', async (req, res) => {

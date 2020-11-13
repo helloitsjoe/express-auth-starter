@@ -1,7 +1,7 @@
+/* eslint-disable consistent-return */
 /* eslint-disable camelcase */
 const bcrypt = require('bcrypt');
 const express = require('express');
-const { sessionMiddleware } = require('../middleware');
 const { generateRandom, makeResponse, ONE_HOUR_IN_SECONDS } = require('../utils');
 
 const router = express.Router();
@@ -53,6 +53,29 @@ const handleLogin = async ({ username, password }, db) => {
   // TODO: Make expired error
   await users.updateOne({ username }, { token, expires_in: TOKEN_EXPIRATION });
   return makeResponse({ token });
+};
+
+const makeError = (status = 403, message = 'Unauthorized!') => {
+  const error = new Error(message);
+  error.statusCode = status;
+  return error;
+};
+
+const sessionMiddleware = async (req, res, next) => {
+  // req.session is set from cookie in expressSession
+  if (!req.session.user) return next(makeError(403, 'Session expired'));
+
+  req.sessionStore.get(req.session.id, async (err, session) => {
+    if (err) return next(err);
+    if (!session) return next(makeError());
+
+    const user = await req.db.users.findOne({ token: session.user });
+
+    if (!user) return next(makeError(404, 'User not found'));
+
+    req.user = user;
+    next();
+  });
 };
 
 router.post('/signup', async (req, res, next) => {
