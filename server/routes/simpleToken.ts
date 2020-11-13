@@ -1,9 +1,8 @@
 /* eslint-disable camelcase */
 import * as bcrypt from 'bcrypt';
 import * as express from 'express';
-import { simpleTokenMiddleware } from '../middleware';
 import { generateRandom, makeResponse, getTokenExp } from '../utils';
-import { AuthRequest, Handler } from '../types';
+import { AuthRequest, Handler, AuthHandler, AuthError } from '../types';
 
 const router = express.Router();
 
@@ -49,6 +48,28 @@ const handleLogin: Handler = async ({ username, password }, users) => {
   // TODO: Make expired error
   await users.updateOne({ username }, { token, expiration: Date.now() + getTokenExp() * 1000 });
   return makeResponse({ token });
+};
+
+const simpleTokenMiddleware: AuthHandler = async (req, res, next) => {
+  const { authorization } = req.headers;
+  const { users } = req.db;
+  const token = authorization ? authorization.split('Bearer ')[1] : '';
+  const user = await users.findOne({ token });
+
+  if (!user) {
+    const error = new Error('Unauthorized!') as AuthError;
+    error.statusCode = 403;
+    return next(error);
+  }
+
+  if (user.expiration! < Date.now()) {
+    const error = new Error('Token is expired') as AuthError;
+    error.statusCode = 403;
+    return next(error);
+  }
+
+  req.user = user;
+  next();
 };
 
 router.post('/signup', async (req, res) => {

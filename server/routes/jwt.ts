@@ -2,9 +2,8 @@ import * as express from 'express';
 // const expressJWT = require('express-jwt');
 import * as jwt from 'jsonwebtoken';
 import * as bcrypt from 'bcrypt';
-import { jwtMiddleware } from '../middleware';
 import { getTokenExp, makeResponse } from '../utils';
-import { AuthRequest, Handler } from '../types';
+import { AuthHandler, Handler, AuthError, JWTBody } from '../types';
 
 const router = express.Router();
 
@@ -49,6 +48,26 @@ const handleLogin: Handler = async ({ username, password }, users) => {
   return makeResponse({ token });
 };
 
+const jwtMiddleware: AuthHandler = (req, res, next) => {
+  const { authorization } = req.headers;
+  if (!authorization) {
+    const error = new Error('Authorization header is required') as AuthError;
+    error.statusCode = 403;
+    return next(error);
+  }
+  try {
+    // JWT has build in expiration check
+    const token = authorization.split('Bearer ')[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || '') as JWTBody;
+    req.user = { username: decoded.username };
+    next();
+  } catch (err) {
+    err.statusCode = 403;
+    err.message = `Unauthorized! ${err.message}`;
+    next(err);
+  }
+};
+
 router.post('/signup', async (req, res) => {
   const foo = req.user;
   const { status, ...rest } = await handleSignUp(req.body, req.db.users);
@@ -60,11 +79,11 @@ router.post('/login', async (req, res) => {
   res.status(status).json(rest);
 });
 
-router.get('/login', jwtMiddleware, (req: AuthRequest, res) => {
+router.get('/login', jwtMiddleware, (req, res) => {
   res.json({ user: req.user });
 });
 
-router.post('/secure', jwtMiddleware, (req: AuthRequest, res) => {
+router.post('/secure', jwtMiddleware, (req, res) => {
   return res.json({ message: `Hi from JWT, ${req.user.username}!` });
 });
 

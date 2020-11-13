@@ -1,8 +1,7 @@
 import * as bcrypt from 'bcrypt';
 import * as express from 'express';
-import { sessionMiddleware } from '../middleware';
 import { generateRandom, makeResponse } from '../utils';
-import { Handler, AuthRequest } from '../types';
+import { Handler, AuthRequest, AuthError, AuthHandler } from '../types';
 import { DB } from '../db';
 
 const router = express.Router();
@@ -50,6 +49,29 @@ const handleLogin: Handler = async ({ username, password }, users) => {
 
   await users.updateOne({ username }, { token });
   return makeResponse({ token });
+};
+
+export const makeError = (status = 403, message = 'Unauthorized!') => {
+  const error = new Error(message) as AuthError;
+  error.statusCode = status;
+  return error;
+};
+
+export const sessionMiddleware: AuthHandler = async (req, res, next) => {
+  // req.session is set from cookie in expressSession
+  if (!req.session.user) return next(makeError(403, 'Session expired'));
+
+  req.session.store.get(req.session.id, async (err, session) => {
+    if (err) return next(err);
+    if (!session) return next(makeError());
+
+    const user = await req.db.users.findOne({ token: session.user });
+
+    if (!user) return next(makeError(404, 'User not found'));
+
+    req.user = user;
+    next();
+  });
 };
 
 router.post('/signup', async (req, res, next) => {
