@@ -103,7 +103,7 @@ router.post('/logout', async (req, res) => {
   }
 
   const { username } = user;
-  await users.updateOne({ username }, { token: null, expires_in: null });
+  await users.updateOne({ username }, { token: null, expiration: null });
   // const userAfter = await users.findOne({ token });
 
   return res.json({ token });

@@ -8,8 +8,8 @@ type QueryKey = 'username' | 'token';
 interface Data {
   username: string;
   hash: string;
-  token?: string;
-  expiration?: number;
+  token?: string | null;
+  expiration?: number | null;
 }
 
 interface Query {
@@ -18,8 +18,8 @@ interface Query {
 }
 
 interface Update {
-  token: string;
-  expiration?: number;
+  token?: string | null;
+  expiration?: number | null;
 }
 
 export interface DB {

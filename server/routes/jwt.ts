@@ -69,7 +69,6 @@ const jwtMiddleware: AuthHandler = (req, res, next) => {
 };
 
 router.post('/signup', async (req, res) => {
-  const foo = req.user;
   const { status, ...rest } = await handleSignUp(req.body, req.db.users);
   res.status(status).json(rest);
 });
