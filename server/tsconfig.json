@@ -5,6 +5,7 @@
     "noImplicitAny": true,
     "module": "commonjs",
     "moduleResolution": "node",
+    "typeRoots": ["typings"],
     "allowJs": true,
     "outDir": "build"
   },

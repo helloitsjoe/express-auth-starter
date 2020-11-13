@@ -5,6 +5,7 @@
     "target": "ES2015",
     "noImplicitAny": true,
     "moduleResolution": "node",
+    "typeRoots": ["server/typings", "node_modules/@types"],
     "allowJs": true,
     "outDir": "dist"
   },

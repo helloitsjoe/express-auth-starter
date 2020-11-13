@@ -59,7 +59,7 @@ export const sessionMiddleware: AuthHandler = async (req, res, next) => {
   // req.session is set from cookie in expressSession
   if (!req.session.user) return next(makeError(403, 'Session expired'));
 
-  req.sessionStore.get(req.session.id, async (err, session) => {
+  req.session.store.get(req.session.id, async (err, session) => {
     if (err) return next(err);
     if (!session) return next(makeError());
 

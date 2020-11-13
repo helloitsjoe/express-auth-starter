@@ -4,7 +4,7 @@ import * as jwt from 'jsonwebtoken';
 import * as bcrypt from 'bcrypt';
 import { jwtMiddleware } from '../middleware';
 import { getTokenExp, makeResponse } from '../utils';
-import { Handler } from '../types';
+import { AuthRequest, Handler } from '../types';
 
 const router = express.Router();
 
@@ -50,6 +50,7 @@ const handleLogin: Handler = async ({ username, password }, users) => {
 };
 
 router.post('/signup', async (req, res) => {
+  const foo = req.user;
   const { status, ...rest } = await handleSignUp(req.body, req.db.users);
   res.status(status).json(rest);
 });
@@ -59,11 +60,11 @@ router.post('/login', async (req, res) => {
   res.status(status).json(rest);
 });
 
-router.get('/login', jwtMiddleware, (req, res) => {
+router.get('/login', jwtMiddleware, (req: AuthRequest, res) => {
   res.json({ user: req.user });
 });
 
-router.post('/secure', jwtMiddleware, (req, res) => {
+router.post('/secure', jwtMiddleware, (req: AuthRequest, res) => {
   return res.json({ message: `Hi from JWT, ${req.user.username}!` });
 });
 

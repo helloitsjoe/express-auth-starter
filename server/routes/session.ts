@@ -2,7 +2,7 @@ import * as bcrypt from 'bcrypt';
 import * as express from 'express';
 import { sessionMiddleware } from '../middleware';
 import { generateRandom, makeResponse } from '../utils';
-import { Handler } from '../types';
+import { Handler, AuthRequest } from '../types';
 import { DB } from '../db';
 
 const router = express.Router();
@@ -55,7 +55,7 @@ const handleLogin: Handler = async ({ username, password }, users) => {
 router.post('/signup', async (req, res, next) => {
   const { status, ...rest } = await handleSignUp(req.body, req.db.users);
   req.session.user = rest.token;
-  req.sessionStore.set(req.session.id, req.session, err => {
+  req.session.store.set(req.session.id, req.session, err => {
     if (err) next(err);
     res.status(status).json(rest);
   });
@@ -64,17 +64,17 @@ router.post('/signup', async (req, res, next) => {
 router.post('/login', async (req, res, next) => {
   const { status, ...rest } = await handleLogin(req.body, req.db.users);
   req.session.user = rest.token;
-  req.sessionStore.set(req.session.id, req.session, err => {
+  req.session.store.set(req.session.id, req.session, err => {
     if (err) next(err);
     res.status(status).json(rest);
   });
 });
 
-router.get('/login', sessionMiddleware, (req, res) => {
+router.get('/login', sessionMiddleware, (req: AuthRequest, res) => {
   return res.json({ user: req.user });
 });
 
-router.post('/secure', sessionMiddleware, async (req, res) => {
+router.post('/secure', sessionMiddleware, async (req: AuthRequest, res) => {
   return res.json({ message: `Hello from session auth, ${req.user.username}!` });
 });
 
@@ -83,7 +83,7 @@ router.post('/logout', async (req, res) => {
   const { cookie } = req.headers;
   if (!cookie) return res.status(403).json({ message: 'No Session ID provided' });
 
-  req.sessionStore.destroy(req.session.id, err => {
+  req.session.store.destroy(req.session.id, err => {
     if (err) return res.status(500).json({ message: err.message });
     return res.json({ message: 'You have been logged out' });
   });

@@ -3,7 +3,7 @@ import * as bcrypt from 'bcrypt';
 import * as express from 'express';
 import { simpleTokenMiddleware } from '../middleware';
 import { generateRandom, makeResponse, getTokenExp } from '../utils';
-import { Handler } from '../types';
+import { AuthRequest, Handler } from '../types';
 
 const router = express.Router();
 
@@ -61,11 +61,11 @@ router.post('/login', async (req, res) => {
   res.status(status).json(rest);
 });
 
-router.get('/login', simpleTokenMiddleware, (req, res) => {
+router.get('/login', simpleTokenMiddleware, (req: AuthRequest, res) => {
   res.json({ user: req.user });
 });
 
-router.post('/secure', simpleTokenMiddleware, async (req, res) => {
+router.post('/secure', simpleTokenMiddleware, async (req: AuthRequest, res) => {
   // TODO: check expiration
   return res.json({ message: `Hello from simple-token auth, ${req.user.username}!` });
 });
