@@ -26,21 +26,21 @@ interface AuthInput {
 export type AuthServerInput = AuthInput & { status?: number };
 export type AuthServerResponse = AuthInput & { status: number };
 
-export interface AuthRequest extends Request {
-  db: DBContext;
-  user: User;
-}
+// export interface AuthRequest extends Request {
+//   db: DBContext;
+//   user: User;
+// }
 
 export interface AuthError extends Error {
-  statusCode: number;
+  statusCode?: number;
 }
 
-export interface AuthHandler {
-  (req: AuthRequest, res: Response, next: (err?: Error) => void): void;
-}
-export interface AuthErrorHandler {
-  (err: AuthError, req: AuthRequest, res: Response, next: (err?: Error) => void): void;
-}
+// export interface AuthHandler {
+//   (req: AuthRequest, res: Response, next: (err?: Error) => void): void;
+// }
+// export interface AuthErrorHandler {
+//   (err: AuthError, req: AuthRequest, res: Response, next: (err?: Error) => void): void;
+// }
 
 export interface JWTBody {
   username: string;

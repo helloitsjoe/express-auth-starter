@@ -2,8 +2,8 @@
  * @jest-environment node
  */
 const axios = require('axios');
-const makeServer = require('../makeServer');
-const makeAuthServer = require('../makeAuthServer');
+const makeServer = require('../makeServer.ts');
+const makeAuthServer = require('../makeAuthServer.ts');
 require('dotenv').config();
 
 const PORT = 1234;

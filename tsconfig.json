@@ -5,6 +5,7 @@
     "target": "ES2015",
     "noImplicitAny": true,
     "moduleResolution": "node",
+    "esModuleInterop": true,
     "allowJs": true,
     "outDir": "dist"
   },

@@ -1,9 +1,9 @@
-import * as express from 'express';
-import * as path from 'path';
-import * as http from 'http';
-import * as cors from 'cors';
-import * as bodyParser from 'body-parser';
-import * as expressSession from 'express-session';
+import express from 'express';
+import path from 'path';
+import http from 'http';
+import cors from 'cors';
+import bodyParser from 'body-parser';
+import expressSession from 'express-session';
 import jwt from './routes/jwt';
 import oauth from './routes/oauth';
 import session from './routes/session';

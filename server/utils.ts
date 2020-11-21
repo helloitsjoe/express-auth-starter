@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 import { AxiosResponse } from 'axios';
 import { AuthServerInput } from './types';
-const crypto = require('crypto');
+import * as crypto from 'crypto';
 
 export const ONE_HOUR_IN_SECONDS = 60 * 60;
 
@@ -27,17 +27,6 @@ export const generateRandom = (len: number): string => {
 };
 
 export const getCookie = (res: AxiosResponse) => {
-  // const KEY = 'connect.sid=s%3A';
-  // const sessionId = cookies.split('; ').find(cookie => cookie.startsWith(KEY));
-  // return sessionId && sessionId.replace(KEY, '').split('.')[0];
   const [cookies] = res.headers['set-cookie'] || [];
   return cookies;
 };
-
-// module.exports = {
-//   ONE_HOUR_IN_SECONDS,
-//   getCookie,
-//   getTokenExp,
-//   generateRandom,
-//   makeResponse,
-// };

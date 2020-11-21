@@ -1,7 +1,7 @@
 import * as bcrypt from 'bcrypt';
 import * as express from 'express';
 import { generateRandom, makeResponse } from '../utils';
-import { Handler, AuthRequest, AuthError, AuthHandler } from '../types';
+import { Handler, AuthError } from '../types';
 import { DB } from '../db';
 
 const router = express.Router();
@@ -57,7 +57,7 @@ export const makeError = (status = 403, message = 'Unauthorized!') => {
   return error;
 };
 
-export const sessionMiddleware: AuthHandler = async (req, res, next) => {
+export const sessionMiddleware: express.Handler = async (req, res, next) => {
   // req.session is set from cookie in expressSession
   if (!req.session.user) return next(makeError(403, 'Session expired'));
 
@@ -92,11 +92,11 @@ router.post('/login', async (req, res, next) => {
   });
 });
 
-router.get('/login', sessionMiddleware, (req: AuthRequest, res) => {
+router.get('/login', sessionMiddleware, (req, res) => {
   return res.json({ user: req.user });
 });
 
-router.post('/secure', sessionMiddleware, async (req: AuthRequest, res) => {
+router.post('/secure', sessionMiddleware, async (req, res) => {
   return res.json({ message: `Hello from session auth, ${req.user.username}!` });
 });
 

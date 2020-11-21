@@ -1,4 +1,4 @@
-const { makeMongoClient, makePgClient, makeTestDbApi } = require('../db');
+const { makeMongoClient, makePgClient, makeTestDbApi } = require('../db.ts');
 
 let db;
 

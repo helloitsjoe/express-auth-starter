@@ -2,9 +2,9 @@
  * @jest-environment node
  */
 const axios = require('axios');
-const makeAuthServer = require('../makeAuthServer');
-const { makeTestDbApi } = require('../db');
-const { getTokenExp, ONE_HOUR_IN_SECONDS } = require('../utils');
+import makeAuthServer from '../makeAuthServer';
+const { makeTestDbApi } = require('../db.ts');
+const { getTokenExp, ONE_HOUR_IN_SECONDS } = require('../utils.ts');
 
 jest.mock('../utils', () => {
   return {
@@ -24,6 +24,7 @@ const setError = e => {
 };
 
 beforeEach(async () => {
+  console.log(`makeAuthServer:`, makeAuthServer);
   getTokenExp.mockReturnValue(ONE_HOUR_IN_SECONDS);
   db = { users: makeTestDbApi() };
   // Passing port 0 to server assigns a random port

@@ -168,20 +168,3 @@ export const makePgClient = async () => {
   const clientWithTable = await makeTable(client);
   return makePgApi(clientWithTable);
 };
-
-// export const validateDbApi = (apiToTest: DB) => {
-//   const apiToOverride = [
-//     'updateOne',
-//     'findOne',
-//     'insertOne',
-//     'deleteOne',
-//     'clearAll',
-//     'closeConnection',
-//   ];
-//   apiToOverride.forEach(methodName => {
-//     if (typeof apiToTest[methodName] !== 'function') {
-//       throw new Error(`Function ${methodName} must be defined`);
-//     }
-//   });
-//   return apiToTest;
-// };

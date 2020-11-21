@@ -2,7 +2,7 @@
 import * as bcrypt from 'bcrypt';
 import * as express from 'express';
 import { generateRandom, makeResponse, getTokenExp } from '../utils';
-import { AuthRequest, Handler, AuthHandler, AuthError } from '../types';
+import { Handler, AuthError } from '../types';
 
 const router = express.Router();
 
@@ -50,7 +50,7 @@ const handleLogin: Handler = async ({ username, password }, users) => {
   return makeResponse({ token });
 };
 
-const simpleTokenMiddleware: AuthHandler = async (req, res, next) => {
+const simpleTokenMiddleware: express.Handler = async (req, res, next) => {
   const { authorization } = req.headers;
   const { users } = req.db;
   const token = authorization ? authorization.split('Bearer ')[1] : '';
@@ -82,11 +82,11 @@ router.post('/login', async (req, res) => {
   res.status(status).json(rest);
 });
 
-router.get('/login', simpleTokenMiddleware, (req: AuthRequest, res) => {
+router.get('/login', simpleTokenMiddleware, (req, res) => {
   res.json({ user: req.user });
 });
 
-router.post('/secure', simpleTokenMiddleware, async (req: AuthRequest, res) => {
+router.post('/secure', simpleTokenMiddleware, async (req, res) => {
   // TODO: check expiration
   return res.json({ message: `Hello from simple-token auth, ${req.user.username}!` });
 });

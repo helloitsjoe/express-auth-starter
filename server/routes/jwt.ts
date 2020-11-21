@@ -3,7 +3,7 @@ import * as express from 'express';
 import * as jwt from 'jsonwebtoken';
 import * as bcrypt from 'bcrypt';
 import { getTokenExp, makeResponse } from '../utils';
-import { AuthHandler, Handler, AuthError, JWTBody } from '../types';
+import { Handler, JWTBody, AuthError } from '../types';
 
 const router = express.Router();
 
@@ -48,10 +48,10 @@ const handleLogin: Handler = async ({ username, password }, users) => {
   return makeResponse({ token });
 };
 
-const jwtMiddleware: AuthHandler = (req, res, next) => {
+const jwtMiddleware: express.Handler = (req, res, next) => {
   const { authorization } = req.headers;
   if (!authorization) {
-    const error = new Error('Authorization header is required') as AuthError;
+    const error: AuthError = new Error('Authorization header is required');
     error.statusCode = 403;
     return next(error);
   }
