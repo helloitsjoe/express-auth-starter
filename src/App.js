@@ -7,11 +7,11 @@ import OAuth from './OAuth';
 export default function App() {
   return (
     <>
-      <Auth endpoint="/jwt" title="JWT" />
+      <Auth id="jwt" title="JWT" />
       <hr />
-      <Auth endpoint="/simple-token" title="Simple Token Auth" />
+      <Auth id="simple-token" title="Simple Token Auth" />
       <hr />
-      <Auth endpoint="/session" title="Session Auth" />
+      <Auth id="session" title="Session Auth" />
       <hr />
       <OAuth title="OAuth" />
       {/* <hr />

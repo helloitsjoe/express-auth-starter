@@ -56,13 +56,14 @@ const useFetch = () => {
   return { ...state, dispatch };
 };
 
-const Form = ({ id, endpoint }) => {
+const Form = ({ id }) => {
   const { handleChange, handleResetForm, values } = useForm({ username: '', password: '' });
   const { authLogIn, authLogOut, isLoggedIn, token } = useAuth();
   const { status, data, errorMessage, dispatch, fetchFn, buttonText } = useFetch();
 
   const passwordRef = useRef();
 
+  const endpoint = `/${id}`;
   const isLoading = status === 'LOADING';
 
   useEffect(() => {
@@ -177,11 +178,12 @@ const Form = ({ id, endpoint }) => {
 };
 
 // MAYBE: Move this and Form into single component so useFetch works for both?
-const SendMessage = ({ id, endpoint }) => {
+const SendMessage = ({ id }) => {
   const { handleChange, values } = useForm({ message: '' });
   const { status, data, errorMessage, dispatch } = useFetch();
   const { token, isLoggedIn } = useAuth();
 
+  const endpoint = `/${id}`;
   const isLoading = status === 'LOADING';
 
   const handleSubmit = e => {
@@ -218,9 +220,7 @@ const SendMessage = ({ id, endpoint }) => {
   );
 };
 
-// TODO: Change endpoint to id
-const Auth = ({ endpoint, title }) => {
-  const id = endpoint.slice(1);
+const Auth = ({ id, title }) => {
   const { isLoggedIn, username } = useAuth();
 
   return (
@@ -231,8 +231,8 @@ const Auth = ({ endpoint, title }) => {
       ) : (
         <span style={{ color: 'gray' }}> Logged out</span>
       )}
-      <Form endpoint={endpoint} id={id} />
-      <SendMessage endpoint={endpoint} id={id} />
+      <Form id={id} />
+      <SendMessage id={id} />
     </>
   );
 };

@@ -47,7 +47,7 @@ const handleLogin = async ({ username, password }, db) => {
     return makeResponse({ message: 'Username and password do not match', status: 401 });
   }
   const token = generateRandom(50);
-  // TODO: Make expired error
+
   await users.updateOne({ username }, { token, expiration: Date.now() + getTokenExp() * 1000 });
   return makeResponse({ token });
 };
