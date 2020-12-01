@@ -2,8 +2,9 @@ import makeServer from './makeServer';
 import makeAuthServer from './makeAuthServer';
 import { makePgClient, makeMongoClient } from './db';
 
-makePgClient()
-  // makeMongoClient()
+const makeClient = process.env.MONGO ? makeMongoClient : makePgClient;
+
+makeClient()
   .then(users => {
     makeServer(3000);
     makeAuthServer(3001, { users });

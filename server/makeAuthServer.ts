@@ -3,7 +3,7 @@ import path from 'path';
 import http from 'http';
 import cors from 'cors';
 import bodyParser from 'body-parser';
-import expressSession from 'express-session';
+import expressSession, { MemoryStore } from 'express-session';
 import jwt from './routes/jwt';
 import oauth from './routes/oauth';
 import session from './routes/session';
@@ -23,6 +23,7 @@ const makeAuthServer = async (port = 3001, db: DBContext) => {
   app.use(bodyParser.json());
   app.use(
     expressSession({
+      store: new MemoryStore(),
       secret: process.env.EXPRESS_SESSION_SECRET || '',
       resave: false,
       saveUninitialized: true,
