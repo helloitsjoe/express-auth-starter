@@ -76,7 +76,7 @@ export const sessionMiddleware: express.Handler = async (req, res, next) => {
 };
 
 router.post('/signup', async (req, res, next) => {
-  if (!req.session?.user) return next(makeError(500, 'Session not initialized'));
+  if (!req.session) return next(makeError(500, 'Session not initialized'));
 
   const { status, ...rest } = await handleSignUp(req.body, req.db.users);
 
@@ -89,10 +89,10 @@ router.post('/signup', async (req, res, next) => {
 });
 
 router.post('/login', async (req, res, next) => {
-  if (!req.session?.user) return next(makeError(500, 'Session not initialized'));
+  if (!req.session) return next(makeError(500, 'Session not initialized'));
 
   const { status, ...rest } = await handleLogin(req.body, req.db.users);
-
+  console.log(`req:`, req);
   req.session.user = rest.token;
   req.session.store.set(req.session.id, req.session, err => {
     if (err) next(err);
