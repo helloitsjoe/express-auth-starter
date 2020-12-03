@@ -59,6 +59,7 @@ export const makeError = (status = 403, message = 'Unauthorized!') => {
 
 export const sessionMiddleware: express.Handler = async (req, res, next) => {
   // req.session is set from cookie in expressSession
+  if (!req.session) return next(makeError(500, 'Session not initialized'));
   if (!req.session.user) return next(makeError(403, 'Session expired'));
 
   req.session.store.get(req.session.id, async (err, session) => {
@@ -75,8 +76,12 @@ export const sessionMiddleware: express.Handler = async (req, res, next) => {
 };
 
 router.post('/signup', async (req, res, next) => {
+  if (!req.session?.user) return next(makeError(500, 'Session not initialized'));
+
   const { status, ...rest } = await handleSignUp(req.body, req.db.users);
+
   req.session.user = rest.token;
+  console.log(`req.session:`, req.session);
   req.session.store.set(req.session.id, req.session, err => {
     if (err) next(err);
     res.status(status).json(rest);
@@ -84,7 +89,10 @@ router.post('/signup', async (req, res, next) => {
 });
 
 router.post('/login', async (req, res, next) => {
+  if (!req.session?.user) return next(makeError(500, 'Session not initialized'));
+
   const { status, ...rest } = await handleLogin(req.body, req.db.users);
+
   req.session.user = rest.token;
   req.session.store.set(req.session.id, req.session, err => {
     if (err) next(err);
@@ -100,8 +108,10 @@ router.post('/secure', sessionMiddleware, async (req, res) => {
   return res.json({ message: `Hello from session auth, ${req.user.username}!` });
 });
 
-router.post('/logout', async (req, res) => {
+router.post('/logout', async (req, res, next) => {
   // TODO: admin auth
+  if (!req.session) return next(makeError(500, 'Session not initialized'));
+
   const { cookie } = req.headers;
   if (!cookie) return res.status(403).json({ message: 'No Session ID provided' });
 

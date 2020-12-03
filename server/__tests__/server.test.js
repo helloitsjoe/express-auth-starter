@@ -1,15 +1,17 @@
 /**
  * @jest-environment node
  */
-const axios = require('axios');
-const makeServer = require('../makeServer.ts');
-const makeAuthServer = require('../makeAuthServer.ts');
+import axios from 'axios';
+import makeServer from '../makeServer.ts';
+import makeAuthServer from '../makeAuthServer.ts';
+
 require('dotenv').config();
 
 const PORT = 1234;
 const rootUrl = `http://localhost:${PORT}`;
 
 let server;
+
 beforeAll(async () => {
   server = await makeServer(PORT);
 });

@@ -1,10 +1,10 @@
 /**
  * @jest-environment node
  */
-const axios = require('axios');
-const makeAuthServer = require('../makeAuthServer.ts');
-const { makeTestDbApi } = require('../db.ts');
-const { getCookie, getTokenExp, ONE_HOUR_IN_SECONDS } = require('../utils.ts');
+import axios from 'axios';
+import makeAuthServer from '../makeAuthServer.ts';
+import { makeTestDbApi } from '../db.ts';
+import { getCookie, getTokenExp, ONE_HOUR_IN_SECONDS } from '../utils.ts';
 
 jest.mock('../utils', () => {
   return {
@@ -151,6 +151,7 @@ describe('session', () => {
       fit('returns error for expired cookie', done => {
         getTokenExp.mockReturnValue(ONE_HOUR_IN_SECONDS * -1);
 
+        // Close server to make new server
         server.close(async () => {
           server = await makeAuthServer(0, db);
           const { port } = server.address();

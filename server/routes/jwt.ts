@@ -5,6 +5,8 @@ import * as bcrypt from 'bcrypt';
 import { getTokenExp, makeResponse } from '../utils';
 import { Handler, JWTBody, AuthError } from '../types';
 
+require('dotenv').config();
+
 const router = express.Router();
 
 const SALT_ROUNDS = 1;
@@ -58,7 +60,7 @@ const jwtMiddleware: express.Handler = (req, res, next) => {
   try {
     // JWT has build in expiration check
     const token = authorization.split('Bearer ')[1];
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || '') as JWTBody;
+    const decoded = jwt.verify(token, secret) as JWTBody;
     req.user = { username: decoded.username };
     next();
   } catch (err) {

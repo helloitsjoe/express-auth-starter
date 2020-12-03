@@ -2017,11 +2017,12 @@
     "@types/qs" "*"
     "@types/range-parser" "*"
 
-"@types/express-session@^1.17.1":
-  version "1.17.1"
-  resolved "https://registry.yarnpkg.com/@types/express-session/-/express-session-1.17.1.tgz#5d69dba9f31be7ffe1db8da3da432213688f59ba"
+"@types/express-session@1.15.16":
+  version "1.15.16"
+  resolved "https://registry.yarnpkg.com/@types/express-session/-/express-session-1.15.16.tgz#91ba1f47a2fc2088811e8d7c17702ec92d8a8b23"
   dependencies:
     "@types/express" "*"
+    "@types/node" "*"
 
 "@types/express@*", "@types/express@^4.17.8":
   version "4.17.8"

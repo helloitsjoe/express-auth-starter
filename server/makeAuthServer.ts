@@ -12,6 +12,8 @@ import { makeDbMiddleware, errorMiddleware } from './middleware';
 import { DBContext } from './types';
 import { getTokenExp } from './utils';
 
+require('dotenv').config();
+
 const makeAuthServer = async (port = 3001, db: DBContext) => {
   const app = express();
   const server = http.createServer(app);
@@ -23,7 +25,6 @@ const makeAuthServer = async (port = 3001, db: DBContext) => {
   app.use(bodyParser.json());
   app.use(
     expressSession({
-      store: new MemoryStore(),
       secret: process.env.EXPRESS_SESSION_SECRET || '',
       resave: false,
       saveUninitialized: true,
@@ -33,7 +34,10 @@ const makeAuthServer = async (port = 3001, db: DBContext) => {
     })
   );
   app.use(makeDbMiddleware(db));
-
+  app.use((req, res, next) => {
+    console.log(`req.session:`, req.session);
+    next();
+  });
   app.use('/jwt', jwt);
   app.use('/session', session);
   app.use('/simple-token', simpleToken);
