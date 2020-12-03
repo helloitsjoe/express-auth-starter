@@ -62,7 +62,7 @@ export const sessionMiddleware: express.Handler = async (req, res, next) => {
   if (!req.session) return next(makeError(500, 'Session not initialized'));
   if (!req.session.user) return next(makeError(403, 'Session expired'));
 
-  req.session.store.get(req.session.id, async (err, session) => {
+  req.sessionStore.get(req.session.id, async (err, session) => {
     if (err) return next(err);
     if (!session) return next(makeError());
 
@@ -81,8 +81,7 @@ router.post('/signup', async (req, res, next) => {
   const { status, ...rest } = await handleSignUp(req.body, req.db.users);
 
   req.session.user = rest.token;
-  console.log(`req.session:`, req.session);
-  req.session.store.set(req.session.id, req.session, err => {
+  req.sessionStore.set(req.session.id, req.session, err => {
     if (err) next(err);
     res.status(status).json(rest);
   });
@@ -92,9 +91,9 @@ router.post('/login', async (req, res, next) => {
   if (!req.session) return next(makeError(500, 'Session not initialized'));
 
   const { status, ...rest } = await handleLogin(req.body, req.db.users);
-  console.log(`req:`, req);
+
   req.session.user = rest.token;
-  req.session.store.set(req.session.id, req.session, err => {
+  req.sessionStore.set(req.session.id, req.session, err => {
     if (err) next(err);
     res.status(status).json(rest);
   });
@@ -115,7 +114,7 @@ router.post('/logout', async (req, res, next) => {
   const { cookie } = req.headers;
   if (!cookie) return res.status(403).json({ message: 'No Session ID provided' });
 
-  req.session.store.destroy(req.session.id, err => {
+  req.sessionStore.destroy(req.session.id, err => {
     if (err) return res.status(500).json({ message: err.message });
     return res.json({ message: 'You have been logged out' });
   });

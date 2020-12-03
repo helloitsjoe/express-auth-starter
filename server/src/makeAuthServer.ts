@@ -3,7 +3,7 @@ import path from 'path';
 import http from 'http';
 import cors from 'cors';
 import bodyParser from 'body-parser';
-import expressSession, { MemoryStore } from 'express-session';
+import expressSession from 'express-session';
 import jwt from './routes/jwt';
 import oauth from './routes/oauth';
 import session from './routes/session';
@@ -34,10 +34,7 @@ const makeAuthServer = async (port = 3001, db: DBContext) => {
     })
   );
   app.use(makeDbMiddleware(db));
-  app.use((req, res, next) => {
-    console.log(`req.session:`, req.session);
-    next();
-  });
+
   app.use('/jwt', jwt);
   app.use('/session', session);
   app.use('/simple-token', simpleToken);

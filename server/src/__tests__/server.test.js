@@ -39,9 +39,9 @@ test.skip('index route returns index.html', async () => {
 });
 
 test('authServer index route returns index.html', async () => {
-  const AUTH_PORT = 1235;
-  const authServer = await makeAuthServer(AUTH_PORT);
-  const res = await axios.get(`http://localhost:${AUTH_PORT}`).catch(err => console.error(err));
+  const authServer = await makeAuthServer(0);
+  const { port } = authServer.address();
+  const res = await axios.get(`http://localhost:${port}`).catch(err => console.error(err));
   const dataIsHTML = /<!DOCTYPE html>/.test(res.data);
   expect(dataIsHTML).toBe(true);
   authServer.close();

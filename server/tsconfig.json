@@ -6,10 +6,10 @@
     "module": "commonjs",
     "moduleResolution": "node",
     "esModuleInterop": true,
-    "typeRoots": ["typings"],
+    "typeRoots": ["src/typings"],
     "allowJs": true,
     "outDir": "build"
   },
-  "include": ["./index.ts"],
+  "include": ["./src/index.ts"],
   "exclude": ["./build/**/*"]
 }
