@@ -55,7 +55,7 @@ const handleLogin = async ({ username, password }, db) => {
   return makeResponse({ token });
 };
 
-const makeError = (status = 403, message = 'Unauthorized!') => {
+const makeError = (status = 401, message = 'Unauthorized!') => {
   const error = new Error(message);
   error.statusCode = status;
   return error;
@@ -63,7 +63,7 @@ const makeError = (status = 403, message = 'Unauthorized!') => {
 
 const sessionMiddleware = async (req, res, next) => {
   // req.session is set from cookie in expressSession
-  if (!req.session.user) return next(makeError(403, 'Session expired'));
+  if (!req.session.user) return next(makeError());
 
   req.sessionStore.get(req.session.id, async (err, session) => {
     if (err) return next(err);
@@ -108,7 +108,7 @@ router.post('/secure', sessionMiddleware, async (req, res) => {
 router.post('/logout', async (req, res) => {
   // TODO: admin auth
   const { cookie } = req.headers;
-  if (!cookie) return res.status(403).json({ message: 'No Session ID provided' });
+  if (!cookie) return res.status(401).json({ message: 'No Session ID provided' });
 
   req.sessionStore.destroy(req.session.id, err => {
     if (err) return res.status(500).json({ message: err.message });

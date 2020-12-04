@@ -1,6 +1,7 @@
 /* eslint-disable react/prop-types */
 import React from 'react';
 import { oauth, updateSecureData } from './services';
+import { Button, Input, TitleWrap } from './Components';
 
 const OAuth = ({ title }) => {
   const [secureData, setSecureData] = React.useState();
@@ -35,26 +36,35 @@ const OAuth = ({ title }) => {
 
   return (
     <form onSubmit={handleSendSecure}>
-      <h3 style={{ display: 'inline' }}>{title}</h3>
-      {authToken ? (
-        <span style={{ color: 'darkseagreen' }}> Logged in</span>
-      ) : (
-        <span style={{ color: 'gray' }}> Logged out</span>
-      )}
+      <TitleWrap>
+        <h3 style={{ display: 'inline' }}>{title}</h3>
+        {authToken ? (
+          <span style={{ color: 'darkseagreen' }}> Logged in</span>
+        ) : (
+          <span style={{ color: 'gray' }}> Logged out</span>
+        )}
+      </TitleWrap>
       <div className="column">
-        <button type="button" onClick={handleOauth}>
-          Authorize with OAuth
-        </button>
-        <input
+        {authToken ? (
+          <Button secondary type="button" onClick={() => setAuthToken(null)}>
+            Log out
+          </Button>
+        ) : (
+          <Button fullWidth type="button" onClick={handleOauth}>
+            Authorize with OAuth
+          </Button>
+        )}
+        <Input
           data-testid="oauth-message-input"
           placeholder="Post a message after you log in"
           onChange={e => setMessage(e.target.value)}
           value={message}
         />
-        <button type="button" onClick={() => setAuthToken(null)}>
-          Log out
-        </button>
-        <button type="submit">Send OAuth message</button>
+        <div>
+          <Button fullWidth type="submit">
+            Send OAuth message
+          </Button>
+        </div>
         {secureData && <pre>{secureData}</pre>}
         {errorMessage && <h1 className="error">Error: {errorMessage}</h1>}
       </div>

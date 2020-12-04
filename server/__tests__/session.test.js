@@ -138,7 +138,7 @@ describe('session', () => {
     });
 
     describe('GET', () => {
-      fit('returns username for valid cookie', async () => {
+      it('returns username for valid cookie', async () => {
         const body = { username: 'foo', password: 'bar' };
         const signup = await axios.post(`${rootUrl}/session/signup`, body);
         const cookie = getCookie(signup);
@@ -148,7 +148,7 @@ describe('session', () => {
         expect(res.data.user.username).toBe(body.username);
       });
 
-      fit('returns error for expired cookie', done => {
+      it('returns error for expired cookie', done => {
         getTokenExp.mockReturnValue(ONE_HOUR_IN_SECONDS * -1);
 
         server.close(async () => {
@@ -162,7 +162,7 @@ describe('session', () => {
 
           const options = { headers: { cookie } };
           await axios.get(`${rootUrl}/session/login`, options).catch(setError);
-          expect(err.response.data.message).toMatch(/expired/i);
+          expect(err.response.data.message).toMatch(/unauthorized/i);
           done();
         });
       });
@@ -248,7 +248,7 @@ describe('session', () => {
       expect(revokedRes.data.message).toMatch(/logged out/i);
 
       await axios.post(`${rootUrl}/session/secure`, body, options).catch(setError);
-      expect(err.response.status).toBe(403);
+      expect(err.response.status).toBe(401);
       expect(err.response.data.message).toMatch(/unauthorized/i);
     });
 
@@ -261,9 +261,9 @@ describe('session', () => {
       expect(err.response.data.message).toMatch(/username already exists/i);
     });
 
-    it('responds with 403 if no cookie provided', async () => {
+    it('responds with 401 if no cookie provided', async () => {
       await axios.post(`${rootUrl}/session/logout`, {}, {}).catch(setError);
-      expect(err.response.status).toBe(403);
+      expect(err.response.status).toBe(401);
       expect(err.response.data.message).toMatch(/no session id provided/i);
     });
   });
