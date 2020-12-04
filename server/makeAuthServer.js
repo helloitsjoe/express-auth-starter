@@ -9,6 +9,7 @@ const session = require('./routes/session');
 const simpleToken = require('./routes/simpleToken');
 const jwt = require('./routes/jwt');
 const { makeDbMiddleware, errorMiddleware } = require('./middleware');
+const { getTokenExp } = require('./utils');
 
 const makeAuthServer = async (port = 3001, db) => {
   const app = express();
@@ -24,6 +25,9 @@ const makeAuthServer = async (port = 3001, db) => {
       secret: process.env.EXPRESS_SESSION_SECRET,
       resave: false,
       saveUninitialized: true,
+      cookie: {
+        maxAge: getTokenExp() * 1000,
+      },
     })
   );
   app.use(makeDbMiddleware(db));

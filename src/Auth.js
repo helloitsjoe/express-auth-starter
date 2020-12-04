@@ -1,8 +1,7 @@
 /* eslint-disable react/prop-types */
-
-import React, { useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import styled from 'styled-components';
-import { login, sendSecure, signUp, logOut } from './services';
+import { login, sendSecure, signUp, logOut, checkLoggedIn } from './services';
 import { withAuthProvider, useAuth } from './AuthContext';
 import { Button, Input, TitleWrap, SendFormWrapper } from './Components';
 import { Actions } from './Login';
@@ -42,6 +41,13 @@ const queryReducer = (s, a) => {
       return { ...s, status: 'LOADING', errorMessage: '' };
     case 'logout_success':
       return { ...s, status: 'IDLE', data: null, fetchFn: s.fetchFn };
+    case 'login_expired':
+      return { ...s, status: 'IDLE', data: null };
+    // case 'toggle_form': {
+    //   const fetchFn = s.fetchFn === login ? signUp : login;
+    //   const buttonText = s.buttonText === 'Log In' ? 'Sign Up' : 'Log In';
+    //   return { ...s, fetchFn, buttonText };
+    // }
     default:
       return s;
   }
@@ -59,13 +65,14 @@ const useFetch = () => {
   return { ...state, dispatch };
 };
 
-const Form = ({ id, endpoint, action }) => {
+const Form = ({ id, action }) => {
   const { handleChange, handleResetForm, values } = useForm({ username: '', password: '' });
   const { authLogIn, authLogOut, isLoggedIn, token } = useAuth();
   const { status, errorMessage, dispatch } = useFetch();
 
   const passwordRef = useRef();
 
+  const endpoint = `/${id}`;
   const isLoading = status === 'LOADING';
   const getButtonText = () => {
     if (isLoading) return 'Loading...';
@@ -73,7 +80,28 @@ const Form = ({ id, endpoint, action }) => {
   };
   const fetchFn = action === Actions.LOGIN ? login : signUp;
 
-  // TODO: Log in/confirm logged in when page is mounted
+  useEffect(() => {
+    if (!token) return;
+
+    checkLoggedIn({ endpoint, token })
+      .then(res => {
+        console.log(`res.data:`, res.data);
+        const { username } = res.data.user;
+        console.log(`username:`, username);
+        authLogIn({ username, token });
+      })
+      .catch(err => {
+        console.log(`err:`, err);
+        authLogOut();
+        const { message } = (err.response && err.response.data) || err;
+        if (!message.match(/expired/i)) {
+          return dispatch({ type: 'fetch_error', payload: message || err.response.status });
+        }
+        // TODO: Refresh token
+        console.log('Expired token, logging out...');
+        return dispatch({ type: 'login_expired' });
+      });
+  }, [token, endpoint]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSubmit = e => {
     e.preventDefault();
@@ -152,11 +180,12 @@ const Form = ({ id, endpoint, action }) => {
 };
 
 // MAYBE: Move this and Form into single component so useFetch works for both?
-const SendMessage = ({ id, endpoint }) => {
-  const { handleChange, values } = useForm({ secureMessage: '' });
+const SendMessage = ({ id }) => {
+  const { handleChange, values } = useForm({ message: '' });
   const { status, data, errorMessage, dispatch } = useFetch();
   const { token, isLoggedIn } = useAuth();
 
+  const endpoint = `/${id}`;
   const isLoading = status === 'LOADING';
 
   const handleSubmit = e => {
@@ -198,7 +227,6 @@ const SendMessage = ({ id, endpoint }) => {
 };
 
 const Auth = ({ id, title, action }) => {
-  const endpoint = `/${id}`;
   const { isLoggedIn, username } = useAuth();
 
   return (
@@ -211,8 +239,8 @@ const Auth = ({ id, title, action }) => {
           <span style={{ color: 'gray' }}> Logged out</span>
         )}
       </TitleWrap>
-      <Form endpoint={endpoint} id={id} action={action} />
-      <SendMessage endpoint={endpoint} id={id} />
+      <Form id={id} action={action} />
+      <SendMessage id={id} />
     </>
   );
 };

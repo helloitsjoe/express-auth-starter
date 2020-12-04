@@ -12,6 +12,18 @@ export const AuthProvider = ({ children, initialValue, id }) => {
 
     setState({ token, username, isLoggedIn });
   }, [id]);
+  // export const AuthProvider = ({ children, initialValue, endpoint }) => {
+  //   const localState = JSON.parse(localStorage.getItem(`auth${endpoint}`)) || {};
+  //   const localToken = localState.token;
+  //   const [state, setState] = useState({ isLoggedIn: false, token: localToken, username: '' });
+
+  //   // useEffect(() => {
+  //   //   // TODO: Use cookies instead of localhost?
+  //   //   const { token, username, isLoggedIn } =
+  //   //     JSON.parse(localStorage.getItem(`auth${endpoint}`)) || {};
+
+  //   //   setState({ token, username, isLoggedIn });
+  //   // }, [endpoint]);
 
   const authLogIn = ({ username, token }) => {
     const isLoggedIn = true;

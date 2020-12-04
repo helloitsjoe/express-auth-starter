@@ -1,7 +1,7 @@
+/* eslint-disable consistent-return */
 /* eslint-disable camelcase */
 const bcrypt = require('bcrypt');
 const express = require('express');
-const { sessionMiddleware } = require('../middleware');
 const { generateRandom, makeResponse, ONE_HOUR_IN_SECONDS } = require('../utils');
 
 const router = express.Router();
@@ -40,6 +40,7 @@ const handleLogin = async ({ username, password }, db) => {
   const user = await users.findOne({ username });
 
   if (!user) {
+    // TODO: Don't return messages like this to the client (insecure)
     return makeResponse({ message: `Username ${username} does not exist`, status: 401 });
   }
 
@@ -52,6 +53,29 @@ const handleLogin = async ({ username, password }, db) => {
   // TODO: Make expired error
   await users.updateOne({ username }, { token, expires_in: TOKEN_EXPIRATION });
   return makeResponse({ token });
+};
+
+const makeError = (status = 401, message = 'Unauthorized!') => {
+  const error = new Error(message);
+  error.statusCode = status;
+  return error;
+};
+
+const sessionMiddleware = async (req, res, next) => {
+  // req.session is set from cookie in expressSession
+  if (!req.session.user) return next(makeError());
+
+  req.sessionStore.get(req.session.id, async (err, session) => {
+    if (err) return next(err);
+    if (!session) return next(makeError());
+
+    const user = await req.db.users.findOne({ token: session.user });
+
+    if (!user) return next(makeError(404, 'User not found'));
+
+    req.user = user;
+    next();
+  });
 };
 
 router.post('/signup', async (req, res, next) => {
@@ -72,6 +96,11 @@ router.post('/login', async (req, res, next) => {
   });
 });
 
+router.get('/login', sessionMiddleware, (req, res) => {
+  // TODO: Don't return the whole user object (insecure)
+  return res.json({ user: req.user });
+});
+
 router.post('/secure', sessionMiddleware, async (req, res) => {
   return res.json({ message: `Hello from session auth, ${req.user.username}!` });
 });
@@ -79,7 +108,7 @@ router.post('/secure', sessionMiddleware, async (req, res) => {
 router.post('/logout', async (req, res) => {
   // TODO: admin auth
   const { cookie } = req.headers;
-  if (!cookie) return res.status(403).json({ message: 'No Session ID provided' });
+  if (!cookie) return res.status(401).json({ message: 'No Session ID provided' });
 
   req.sessionStore.destroy(req.session.id, err => {
     if (err) return res.status(500).json({ message: err.message });

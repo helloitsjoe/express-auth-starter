@@ -58,10 +58,10 @@ const makeMongoApi = (client, collection) => {
 };
 
 const makePgApi = client => {
-  const insertOne = async ({ username, hash, token, expires_in }) => {
+  const insertOne = async ({ username, hash, token, expiration }) => {
     const query =
-      'INSERT INTO users(username, hash, token, expires_in) VALUES($1, $2, $3, $4) RETURNING *';
-    const values = [username, hash, token, expires_in];
+      'INSERT INTO users(username, hash, token, expiration) VALUES($1, $2, $3, $4) RETURNING *';
+    const values = [username, hash, token, expiration];
     const users = await client.query(query, values);
     return users.rows[0];
   };
@@ -75,10 +75,10 @@ const makePgApi = client => {
     return users.rows[0] || null;
   };
 
-  const updateOne = async ({ username }, { token, expires_in }) => {
+  const updateOne = async ({ username }, { token, expiration }) => {
     const updateQuery =
-      'UPDATE users SET (token, expires_in) = ($1, $2) WHERE username = $3 RETURNING *';
-    const values = [token, expires_in, username];
+      'UPDATE users SET (token, expiration) = ($1, $2) WHERE username = $3 RETURNING *';
+    const values = [token, expiration, username];
     const users = await client.query(updateQuery, values);
     return { modifiedCount: users.rows.length };
   };
@@ -103,7 +103,7 @@ const makeTable = async client => {
       username VARCHAR(64) NOT NULL,
       hash VARCHAR(64) NOT NULL,
       token VARCHAR(64),
-      expires_in INT
+      expiration BIGINT
     );
   `
   );

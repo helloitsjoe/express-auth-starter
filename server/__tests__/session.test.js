@@ -4,7 +4,14 @@
 const axios = require('axios');
 const makeAuthServer = require('../makeAuthServer');
 const { makeTestDbApi } = require('../db');
-const { getCookie } = require('../utils');
+const { getCookie, getTokenExp, ONE_HOUR_IN_SECONDS } = require('../utils');
+
+jest.mock('../utils', () => {
+  return {
+    ...jest.requireActual('../utils'),
+    getTokenExp: jest.fn(),
+  };
+});
 
 let db;
 let err;
@@ -17,6 +24,7 @@ const setError = e => {
 };
 
 beforeEach(async () => {
+  getTokenExp.mockReturnValue(ONE_HOUR_IN_SECONDS);
   db = { users: makeTestDbApi() };
   // Passing port 0 to server assigns a random port
   server = await makeAuthServer(0, db);
@@ -29,6 +37,7 @@ afterEach(done => {
   err = null;
   rootUrl = null;
   server.close(done);
+  jest.clearAllMocks();
 });
 
 test('listens on given port', () => {
@@ -88,42 +97,75 @@ describe('session', () => {
   });
 
   describe('/login', () => {
-    it('returns session ID for valid login', async () => {
-      const body = { username: 'foo', password: 'bar' };
-      await axios.post(`${rootUrl}/session/signup`, body);
-      const res = await axios.post(`${rootUrl}/session/login`, body);
-      expect(getCookie(res)).toMatch(/connect.sid=/);
+    describe('POST', () => {
+      it('returns session ID for valid login', async () => {
+        const body = { username: 'foo', password: 'bar' };
+        await axios.post(`${rootUrl}/session/signup`, body);
+        const res = await axios.post(`${rootUrl}/session/login`, body);
+        expect(getCookie(res)).toMatch(/connect.sid=/);
+      });
+
+      it('returns error if no username', async () => {
+        expect.assertions(2);
+        const body = { password: 'bar' };
+        await axios.post(`${rootUrl}/session/login`, body).catch(setError);
+        expect(err.response.status).toBe(401);
+        expect(err.response.data.message).toMatch(/username and password are both required/i);
+      });
+
+      it('returns error if no password', async () => {
+        const body = { username: 'foo' };
+        await axios.post(`${rootUrl}/session/login`, body).catch(setError);
+        expect(err.response.status).toBe(401);
+        expect(err.response.data.message).toMatch(/username and password are both required/i);
+      });
+
+      it('returns error if password does not match', async () => {
+        const body = { username: 'foo', password: 'bar' };
+        await axios.post(`${rootUrl}/session/signup`, body);
+        const wrong = { username: 'foo', password: 'not-bar' };
+        await axios.post(`${rootUrl}/session/login`, wrong).catch(setError);
+        expect(err.response.status).toBe(401);
+        expect(err.response.data.message).toMatch(/username and password do not match/i);
+      });
+
+      it('returns error if username does not exist', async () => {
+        const body = { username: 'foo', password: 'bar' };
+        await axios.post(`${rootUrl}/session/login`, body).catch(setError);
+        expect(err.response.status).toBe(401);
+        expect(err.response.data.message).toMatch(/username foo does not exist/i);
+      });
     });
 
-    it('returns error if no username', async () => {
-      expect.assertions(2);
-      const body = { password: 'bar' };
-      await axios.post(`${rootUrl}/session/login`, body).catch(setError);
-      expect(err.response.status).toBe(401);
-      expect(err.response.data.message).toMatch(/username and password are both required/i);
-    });
+    describe('GET', () => {
+      it('returns username for valid cookie', async () => {
+        const body = { username: 'foo', password: 'bar' };
+        const signup = await axios.post(`${rootUrl}/session/signup`, body);
+        const cookie = getCookie(signup);
 
-    it('returns error if no password', async () => {
-      const body = { username: 'foo' };
-      await axios.post(`${rootUrl}/session/login`, body).catch(setError);
-      expect(err.response.status).toBe(401);
-      expect(err.response.data.message).toMatch(/username and password are both required/i);
-    });
+        const options = { headers: { cookie } };
+        const res = await axios.get(`${rootUrl}/session/login`, options);
+        expect(res.data.user.username).toBe(body.username);
+      });
 
-    it('returns error if password does not match', async () => {
-      const body = { username: 'foo', password: 'bar' };
-      await axios.post(`${rootUrl}/session/signup`, body);
-      const wrong = { username: 'foo', password: 'not-bar' };
-      await axios.post(`${rootUrl}/session/login`, wrong).catch(setError);
-      expect(err.response.status).toBe(401);
-      expect(err.response.data.message).toMatch(/username and password do not match/i);
-    });
+      it('returns error for expired cookie', done => {
+        getTokenExp.mockReturnValue(ONE_HOUR_IN_SECONDS * -1);
 
-    it('returns error if username does not exist', async () => {
-      const body = { username: 'foo', password: 'bar' };
-      await axios.post(`${rootUrl}/session/login`, body).catch(setError);
-      expect(err.response.status).toBe(401);
-      expect(err.response.data.message).toMatch(/username foo does not exist/i);
+        server.close(async () => {
+          server = await makeAuthServer(0, db);
+          const { port } = server.address();
+          rootUrl = getRootUrl(port);
+
+          const body = { username: 'foo', password: 'bar' };
+          const signup = await axios.post(`${rootUrl}/session/signup`, body);
+          const cookie = getCookie(signup);
+
+          const options = { headers: { cookie } };
+          await axios.get(`${rootUrl}/session/login`, options).catch(setError);
+          expect(err.response.data.message).toMatch(/unauthorized/i);
+          done();
+        });
+      });
     });
   });
 
@@ -206,7 +248,7 @@ describe('session', () => {
       expect(revokedRes.data.message).toMatch(/logged out/i);
 
       await axios.post(`${rootUrl}/session/secure`, body, options).catch(setError);
-      expect(err.response.status).toBe(403);
+      expect(err.response.status).toBe(401);
       expect(err.response.data.message).toMatch(/unauthorized/i);
     });
 
@@ -219,9 +261,9 @@ describe('session', () => {
       expect(err.response.data.message).toMatch(/username already exists/i);
     });
 
-    it('responds with 403 if no cookie provided', async () => {
+    it('responds with 401 if no cookie provided', async () => {
       await axios.post(`${rootUrl}/session/logout`, {}, {}).catch(setError);
-      expect(err.response.status).toBe(403);
+      expect(err.response.status).toBe(401);
       expect(err.response.data.message).toMatch(/no session id provided/i);
     });
   });
