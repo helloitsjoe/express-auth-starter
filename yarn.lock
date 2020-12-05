@@ -8539,8 +8539,8 @@ webpack-cli@^3.3.10:
     yargs "13.2.4"
 
 webpack-simple@^1.5.2:
-  version "1.5.2"
-  resolved "https://registry.yarnpkg.com/webpack-simple/-/webpack-simple-1.5.2.tgz#79db5e9a1a318cbf8b0ad143ec8918429af7cfac"
+  version "1.7.1"
+  resolved "https://registry.yarnpkg.com/webpack-simple/-/webpack-simple-1.7.1.tgz#f886dfcc22bad68550edb21e582cb1e1a8c48999"
 
 webpack-sources@^1.4.0, webpack-sources@^1.4.1:
   version "1.4.3"
