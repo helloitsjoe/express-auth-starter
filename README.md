@@ -1,2 +1,7 @@
-# express-auth-example
-Example of an Express app with authentication
+# Express Auth Example
+
+Express examples of different types of authentication:
+
+- JWT
+- Session
+- OAuth
