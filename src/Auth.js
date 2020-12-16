@@ -37,6 +37,8 @@ const queryReducer = (s, a) => {
     case 'fetch_error':
       console.log(`error:`, a.payload);
       return { ...s, status: 'ERROR', errorMessage: a.payload };
+    case 'clear_error':
+      return { ...s, status: 'IDLE', errorMessage: '' };
     case 'logout':
       return { ...s, status: 'LOADING', errorMessage: '' };
     case 'logout_success':
@@ -181,19 +183,23 @@ const Form = ({ id, action }) => {
 
 // MAYBE: Move this and Form into single component so useFetch works for both?
 const SendMessage = ({ id }) => {
-  const { handleChange, values } = useForm({ message: '' });
+  const { handleChange, values } = useForm({ secureMessage: '' });
   const { status, data, errorMessage, dispatch } = useFetch();
   const { token, isLoggedIn } = useAuth();
 
   const endpoint = `/${id}`;
   const isLoading = status === 'LOADING';
 
+  useEffect(() => {
+    dispatch({ type: 'clear_error' });
+  }, [isLoggedIn, dispatch]);
+
   const handleSubmit = e => {
     e.preventDefault();
-    const { message } = values;
+    const { secureMessage } = values;
 
     dispatch({ type: 'fetch' });
-    sendSecure({ endpoint, message, token })
+    sendSecure({ endpoint, message: secureMessage, token })
       .then(res => {
         dispatch({ type: 'fetch_success', payload: res.data });
       })

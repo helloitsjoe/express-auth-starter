@@ -6,7 +6,7 @@ const bodyParser = require('body-parser');
 const expressSession = require('express-session');
 const jwt = require('./routes/jwt');
 const oauth = require('./routes/oauth');
-const graphql = require('./routes/graphql');
+// const graphql = require('./routes/graphql');
 const session = require('./routes/session');
 const simpleToken = require('./routes/simpleToken');
 const { makeDbMiddleware, errorMiddleware } = require('./middleware');
@@ -35,11 +35,13 @@ const makeAuthServer = async (port = 3001, db) => {
 
   app.use('/jwt', jwt);
   app.use('/session', session);
-  app.use('/simple-token', simpleToken);
   app.use('/oauth', oauth);
+  // NOTE: simple-token is not a secure method of auth, only
+  // included here as an example.
+  app.use('/simple-token', simpleToken);
 
   // TODO: Add different types of auth to this route
-  app.use('/graphql', graphql);
+  // app.use('/graphql', graphql);
 
   app.use(errorMiddleware);
 
