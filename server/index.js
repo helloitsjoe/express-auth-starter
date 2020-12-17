@@ -2,8 +2,9 @@ const makeServer = require('./makeServer');
 const makeAuthServer = require('./makeAuthServer');
 const { makePgClient, makeMongoClient } = require('./db');
 
-makePgClient()
-  // makeMongoClient()
+const makeClient = process.env.MONGO ? makeMongoClient : makePgClient;
+
+makeClient()
   .then(users => {
     makeServer(3000);
     makeAuthServer(3001, { users });
